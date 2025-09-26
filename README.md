@@ -12,7 +12,7 @@
 
 ---
 
-A mobile application designed to help students at University of Ghana, Legon report, find, and communicate about lost & found items on campus.
+A mobile application designed to help students at University of Ghana Legon report, find, and communicate about lost & found items on campus.
 
 ![React Native](https://img.shields.io/badge/React_Native-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
 ![Expo](https://img.shields.io/badge/expo-1C1E24?style=for-the-badge&logo=expo&logoColor=#D04A37)
