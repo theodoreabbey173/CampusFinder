@@ -129,7 +129,7 @@ CampusFinder/
 ├── assets
 │   
 ├── screens/
-│   ├── screenshots/                     # Item images and app assets
+│   ├── screenshots/               # App screenshots
 │   ├── SignUpScreen.js            # User registration
 │   ├── VerificationScreen.js      # Email verification
 │   ├── WelcomeScreen.js           # App welcome & onboarding
