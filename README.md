@@ -78,8 +78,9 @@ The process is illustrated beginning on the left side of the diagram.
 <img src="./screens/screenshots/4.jpg" alt="Item List Page" width="150px"/>
 <img src="./screens/screenshots/5.jpg" alt="Item Details Page " width="150px"/>
 <img src="./screens/screenshots/6.jpg" alt="Chat Page" width="150px"/>
-<img src="./screens/screenshots/7.jpg" alt="Report Item Page" width="150px"/>
 <img src="./screens/screenshots/8.jpg" alt="onfirmation Page" width="150px"/>
+<img src="./screens/screenshots/7.jpg" alt="Report Item Page" width="150px"/>
+
 </div>
 
 
