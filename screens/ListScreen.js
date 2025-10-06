@@ -16,7 +16,7 @@ const DUMMY_ITEMS = [
     location: 'Library 3rd Floor',
     type: 'Found',
     date: '2 hours ago',
-    image: 'https://skybags.co.in/cdn/shop/files/BPSQPR04SBL.png?v=1698144146', // Replace with your image
+    image: 'https://www.sprayground.com/cdn/shop/products/B5444_1.png?v=1694346103', // Replace with your image
   },
   {
     id: '2',
