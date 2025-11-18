@@ -6,10 +6,11 @@
 **Institution**: University of Ghana, Legon  
 **Student ID**: 11343393  
 **Email**: theodoreabbey174@gmail.com 
-**GitHub**: theodoreabbey173  
+**GitHub**: theodoreabbey173 
+**LinkedIn**: www.linkedin.com/in/theodore-abbey
 **Program**: Computer Science  
 **Academic Year**: 2026  
-**LinkedIn**: www.linkedin.com/in/theodore-abbey
+
 ---
 
 A mobile application designed to help students at University of Ghana Legon report, find, and communicate about lost & found items on campus.
