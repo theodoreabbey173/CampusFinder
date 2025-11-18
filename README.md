@@ -2,7 +2,7 @@
 
 ## 👨‍💻 Developer Information
 
-**Developer**: Theodore Gyaqueh Abbey  
+***Developer***: Theodore Gyaqueh Abbey  
 **Institution**: University of Ghana, Legon  
 **Student ID**: 11343393  
 **Email**: theodoreabbey174@gmail.com 
