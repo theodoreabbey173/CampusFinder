@@ -6,7 +6,6 @@
 **Institution**: University of Ghana, Legon  
 **Student ID**: 11343393  
 **Email**: theodoreabbey174@gmail.com 
-
 **GitHub**: theodoreabbey173  
 **Program**: Computer Science  
 **Academic Year**: 2026  
