@@ -3,8 +3,7 @@
 ## 👨‍💻 Developer Information
 
 **Developer**: Theodore Gyaqueh Abbey  
-**Institution**: University of Ghana, Legon  
-**Student ID**: 11343393  
+**Institution**: University of Ghana, Legon    
 **Email**: theodoreabbey174@gmail.com   
 **LinkedIn**: www.linkedin.com/in/theodore-abbey   
 **GitHub**: theodoreabbey173    
