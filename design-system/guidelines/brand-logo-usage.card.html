@@ -1,0 +1,23 @@
+<!-- @dsCard group="Brand" viewport="700x210" name="Logo on Backgrounds" subtitle="Clearspace + approved surfaces" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<link rel="stylesheet" href="../styles.css" />
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: var(--font-sans); background: var(--surface-card); padding: 22px; display: flex; gap: 16px; }
+  .tile { flex: 1; height: 150px; border-radius: var(--radius-lg); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; box-shadow: var(--shadow-sm); }
+  .tile img { width: 64px; height: 64px; object-fit: contain; }
+  .lbl { font-size: 11px; font-weight: 600; }
+  .light { background: var(--neutral-0); border: 1px solid var(--border-subtle); }
+  .tint { background: var(--blue-50); }
+  .brand { background: var(--gradient-brand); }
+</style>
+</head>
+<body>
+  <div class="tile light"><img src="../assets/logo-mark.png" alt="mark on white" /><span class="lbl" style="color:var(--text-muted)">On white</span></div>
+  <div class="tile tint"><img src="../assets/logo-mark.png" alt="mark on tint" /><span class="lbl" style="color:var(--blue-700)">On blue tint</span></div>
+  <div class="tile brand"><img src="../assets/logo-mark.png" alt="mark on brand" style="filter:brightness(0) invert(1)" /><span class="lbl" style="color:#fff">Reversed on brand</span></div>
+</body>
+</html>

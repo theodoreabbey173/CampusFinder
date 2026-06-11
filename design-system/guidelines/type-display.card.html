@@ -1,0 +1,25 @@
+<!-- @dsCard group="Type" viewport="700x200" name="Display — Plus Jakarta Sans" subtitle="Headings, brand, screen titles" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<link rel="stylesheet" href="../styles.css" />
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: var(--font-display); background: var(--surface-card); padding: 24px 26px; color: var(--text-strong); }
+  .big { font-weight: 800; font-size: 44px; letter-spacing: var(--tracking-tight); line-height: 1; }
+  .big .b { color: var(--blue-600); } .big .t { color: var(--teal-500); }
+  .row { display: flex; gap: 28px; align-items: baseline; margin-top: 18px; flex-wrap: wrap; }
+  .spec { color: var(--text-heading); }
+  .lbl { font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); margin-top: 6px; }
+</style>
+</head>
+<body>
+  <div class="big"><span class="b">Campus</span><span class="t">Finder</span></div>
+  <div class="row">
+    <div><div class="spec" style="font-size:30px;font-weight:800">Aa Bb Cc</div><div class="lbl">Extrabold 800</div></div>
+    <div><div class="spec" style="font-size:30px;font-weight:700">Aa Bb Cc</div><div class="lbl">Bold 700</div></div>
+    <div><div class="spec" style="font-size:30px;font-weight:600">Aa Bb Cc</div><div class="lbl">Semibold 600</div></div>
+  </div>
+</body>
+</html>

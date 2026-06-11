@@ -1,0 +1,25 @@
+<!-- @dsCard group="Spacing" viewport="700x160" name="Radius" subtitle="6px → pill" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<link rel="stylesheet" href="../styles.css" />
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: var(--font-mono); background: var(--surface-card); padding: 22px; display: flex; gap: 16px; align-items: flex-end; }
+  .col { text-align: center; }
+  .box { width: 72px; height: 64px; background: var(--blue-50); border: 1.5px solid var(--blue-300); }
+  .lbl { font-size: 10px; color: var(--text-muted); margin-top: 8px; }
+  .px { font-size: 11px; color: var(--text-strong); font-weight: 700; }
+</style>
+</head>
+<body>
+  <div class="col"><div class="box" style="border-radius:var(--radius-xs)"></div><div class="px">6</div><div class="lbl">xs</div></div>
+  <div class="col"><div class="box" style="border-radius:var(--radius-sm)"></div><div class="px">8</div><div class="lbl">sm</div></div>
+  <div class="col"><div class="box" style="border-radius:var(--radius-md)"></div><div class="px">12</div><div class="lbl">md</div></div>
+  <div class="col"><div class="box" style="border-radius:var(--radius-lg)"></div><div class="px">14</div><div class="lbl">lg</div></div>
+  <div class="col"><div class="box" style="border-radius:var(--radius-xl)"></div><div class="px">18</div><div class="lbl">xl</div></div>
+  <div class="col"><div class="box" style="border-radius:var(--radius-2xl)"></div><div class="px">24</div><div class="lbl">2xl</div></div>
+  <div class="col"><div class="box" style="border-radius:var(--radius-pill)"></div><div class="px">∞</div><div class="lbl">pill</div></div>
+</body>
+</html>

@@ -1,0 +1,38 @@
+<!-- @dsCard group="Colors" viewport="700x150" name="Teal & Orange Scales" subtitle="Secondary and accent ramps" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<link rel="stylesheet" href="../styles.css" />
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: var(--font-mono); background: var(--surface-card); padding: 20px 22px; }
+  .ramp { display: flex; border-radius: var(--radius-md); overflow: hidden; box-shadow: var(--shadow-sm); margin-bottom: 12px; }
+  .stop { flex: 1; height: 52px; display: flex; align-items: center; justify-content: center; font-size: 9px; letter-spacing: .03em; }
+</style>
+</head>
+<body>
+  <div class="ramp">
+    <div class="stop" style="background:var(--teal-50);color:var(--teal-700)">50</div>
+    <div class="stop" style="background:var(--teal-100);color:var(--teal-700)">100</div>
+    <div class="stop" style="background:var(--teal-200);color:var(--teal-800)">200</div>
+    <div class="stop" style="background:var(--teal-300);color:var(--teal-800)">300</div>
+    <div class="stop" style="background:var(--teal-400);color:#fff">400</div>
+    <div class="stop" style="background:var(--teal-500);color:#fff">500</div>
+    <div class="stop" style="background:var(--teal-600);color:#fff">600</div>
+    <div class="stop" style="background:var(--teal-700);color:#fff">700</div>
+    <div class="stop" style="background:var(--teal-800);color:#fff">800</div>
+  </div>
+  <div class="ramp">
+    <div class="stop" style="background:var(--orange-50);color:var(--orange-700)">50</div>
+    <div class="stop" style="background:var(--orange-100);color:var(--orange-700)">100</div>
+    <div class="stop" style="background:var(--orange-200);color:var(--orange-700)">200</div>
+    <div class="stop" style="background:var(--orange-300);color:var(--orange-700)">300</div>
+    <div class="stop" style="background:var(--orange-400);color:#fff">400</div>
+    <div class="stop" style="background:var(--orange-500);color:#fff">500</div>
+    <div class="stop" style="background:var(--orange-600);color:#fff">600</div>
+    <div class="stop" style="background:var(--orange-700);color:#fff">700</div>
+    <div class="stop" style="background:#fff;color:#fff"></div>
+  </div>
+</body>
+</html>
