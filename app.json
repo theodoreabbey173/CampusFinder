@@ -20,8 +20,22 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "permissions": [
+        "NOTIFICATIONS",
+        "RECEIVE_BOOT_COMPLETED",
+        "VIBRATE"
+      ]
     },
+    "plugins": [
+      [
+        "expo-notifications",
+        {
+          "color": "#2196F3",
+          "defaultChannel": "chat-messages"
+        }
+      ]
+    ],
     "web": {
       "favicon": "./assets/favicon.png"
     }

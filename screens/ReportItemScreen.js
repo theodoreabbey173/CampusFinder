@@ -7,67 +7,117 @@ import {
   StyleSheet,
   ScrollView,
   Alert,
-  Image, // Keep Image component
+  Image,
+  ActivityIndicator,
 } from 'react-native';
-import * as ImagePicker from 'expo-image-picker'; // Import the library
+import * as ImagePicker from 'expo-image-picker';
+import { auth } from '../firebaseConfig';
+import { createItem } from '../backend/itemsService';
+import { uploadImage } from '../backend/storageService';
 
 export default function ReportItemScreen({ navigation }) {
-  const [itemName, setItemName] = useState('');
+  const [itemName,    setItemName]    = useState('');
   const [description, setDescription] = useState('');
-  const [location, setLocation] = useState('');
-  const [reportType, setReportType] = useState('Found');
-  const [imageUri, setImageUri] = useState(null); // State to hold the local image URI
+  const [location,    setLocation]    = useState('');
+  const [reportType,  setReportType]  = useState('Found');
+  const [imageUri,    setImageUri]    = useState(null);
+  const [submitting,  setSubmitting]  = useState(false);
 
-  // Function to handle picking an image from the gallery
+  // ── Image picker — Gallery ────────────────────────────────────────────────
+
   const pickImage = async () => {
-    // Request permission to access the media library
-    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    
-    if (permissionResult.granted === false) {
-      Alert.alert("Permission Required", "You've refused to allow this app to access your photos.");
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) {
+      Alert.alert(
+        'Permission Required',
+        "Please allow access to your photos so you can attach an image.",
+      );
       return;
     }
 
-    // Launch the image library
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [4, 3],
-      quality: 1,
+      quality: 0.8,
     });
 
-    // If the user didn't cancel, set the image URI
     if (!result.canceled) {
       setImageUri(result.assets[0].uri);
     }
   };
-  
-  const handleSubmit = () => {
+
+  // ── Image picker — Camera ─────────────────────────────────────────────────
+
+  const takePhoto = async () => {
+    const permission = await ImagePicker.requestCameraPermissionsAsync();
+    if (!permission.granted) {
+      Alert.alert(
+        'Camera Permission Required',
+        "Please allow access to your camera so you can take a photo.",
+      );
+      return;
+    }
+
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 0.8,
+    });
+
+    if (!result.canceled) {
+      setImageUri(result.assets[0].uri);
+    }
+  };
+
+  // ── Submit ────────────────────────────────────────────────────────────────────
+
+  const handleSubmit = async () => {
     if (!itemName || !description || !location) {
       Alert.alert('Error', 'Please fill in all required fields');
       return;
     }
-    
-    // Now you can handle the imageUri in your submission logic
-    console.log({
-        reportType,
-        itemName,
+
+    const user = auth.currentUser;
+    if (!user) {
+      Alert.alert('Error', 'You must be signed in to report an item.');
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      // 1. Upload image to Firebase Storage (if one was selected)
+      let imageUrl = null;
+      if (imageUri) {
+        imageUrl = await uploadImage(imageUri);
+      }
+
+      // 2. Save item document to Firestore `items` collection
+      await createItem({
+        name:         itemName,
         description,
         location,
-        imageUri // The local file path to the image
-    });
+        type:         reportType,
+        imageUrl,
+        reportedBy:   user.uid,
+        reporterName: user.displayName ?? 'Anonymous',
+      });
 
-    Alert.alert(
-      'Success',
-      `Your ${reportType.toLowerCase()} item report has been submitted!`,
-      [
-        {
-          text: 'OK',
-          onPress: () => navigation.navigate('ItemList')
-        }
-      ]
-    );
+      Alert.alert(
+        'Report Submitted! ✅',
+        `Your ${reportType.toLowerCase()} item report has been saved.`,
+        [{ text: 'OK', onPress: () => navigation.navigate('ItemList') }],
+      );
+    } catch (error) {
+      console.error('Submit error:', error);
+      Alert.alert('Error', 'Failed to submit the report. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
   };
+
+  // ── Render ────────────────────────────────────────────────────────────────────
 
   return (
     <ScrollView style={styles.container}>
@@ -76,25 +126,22 @@ export default function ReportItemScreen({ navigation }) {
         Help others by reporting lost or found items on campus
       </Text>
 
+      {/* Report type toggle */}
       <View style={styles.typeSelector}>
         <Text style={styles.label}>Report Type</Text>
         <View style={styles.typeButtons}>
-          <TouchableOpacity
-            style={[styles.typeButton, reportType === 'Lost' && styles.activeTypeButton]}
-            onPress={() => setReportType('Lost')}
-          >
-            <Text style={[styles.typeButtonText, reportType === 'Lost' && styles.activeTypeButtonText]}>
-              Lost Item
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.typeButton, reportType === 'Found' && styles.activeTypeButton]}
-            onPress={() => setReportType('Found')}
-          >
-            <Text style={[styles.typeButtonText, reportType === 'Found' && styles.activeTypeButtonText]}>
-              Found Item
-            </Text>
-          </TouchableOpacity>
+          {['Lost', 'Found'].map((type) => (
+            <TouchableOpacity
+              key={type}
+              style={[styles.typeButton, reportType === type && styles.activeTypeButton]}
+              onPress={() => setReportType(type)}
+              disabled={submitting}
+            >
+              <Text style={[styles.typeButtonText, reportType === type && styles.activeTypeButtonText]}>
+                {type} Item
+              </Text>
+            </TouchableOpacity>
+          ))}
         </View>
       </View>
 
@@ -105,47 +152,87 @@ export default function ReportItemScreen({ navigation }) {
           placeholder="e.g., Blue Backpack, iPhone, Textbook"
           value={itemName}
           onChangeText={setItemName}
+          editable={!submitting}
         />
 
         <Text style={styles.label}>Description *</Text>
         <TextInput
           style={[styles.input, styles.textArea]}
-          placeholder="Provide details about the item (color, brand, distinguishing features, etc.)"
+          placeholder="Provide details (colour, brand, distinguishing features…)"
           value={description}
           onChangeText={setDescription}
           multiline
           numberOfLines={4}
           textAlignVertical="top"
+          editable={!submitting}
         />
 
         <Text style={styles.label}>Location *</Text>
         <TextInput
           style={styles.input}
-          placeholder="Where was the item lost/found?"
+          placeholder="Where was the item lost / found?"
           value={location}
           onChangeText={setLocation}
+          editable={!submitting}
         />
 
-        {/* --- Start of New Image Upload Section --- */}
+        {/* Image picker */}
         <Text style={styles.label}>Add an Image (Optional)</Text>
-        
-        {/* If no image is selected, show the upload button */}
         {!imageUri ? (
-          <TouchableOpacity style={styles.imagePickerButton} onPress={pickImage}>
-            <Text style={styles.imagePickerButtonText}> Select Image from Photos</Text>
-          </TouchableOpacity>
-        ) : (
-          // If an image is selected, show the preview and a remove button
-          <View style={styles.imagePreviewContainer}>
-            <Image source={{ uri: imageUri }} style={styles.imagePreview} />
-            
-            <TouchableOpacity style={styles.removeImageButton} onPress={() => setImageUri(null)}>
-              <Text style={styles.removeImageButtonText}>Remove Image</Text>
+          <View style={styles.imageButtonRow}>
+            {/* Take photo with camera */}
+            <TouchableOpacity
+              style={[styles.imageOptionButton, styles.cameraButton]}
+              onPress={takePhoto}
+              disabled={submitting}
+            >
+              <Text style={styles.imageOptionIcon}>📷</Text>
+              <Text style={styles.imageOptionTitle}>Take Photo</Text>
+              <Text style={styles.imageOptionSub}>Use camera</Text>
+            </TouchableOpacity>
+
+            {/* Choose from gallery */}
+            <TouchableOpacity
+              style={[styles.imageOptionButton, styles.galleryButton]}
+              onPress={pickImage}
+              disabled={submitting}
+            >
+              <Text style={styles.imageOptionIcon}>🖼️</Text>
+              <Text style={styles.imageOptionTitle}>Choose Photo</Text>
+              <Text style={styles.imageOptionSub}>From gallery</Text>
             </TouchableOpacity>
           </View>
+        ) : (
+          <View style={styles.imagePreviewContainer}>
+            <Image source={{ uri: imageUri }} style={styles.imagePreview} />
+            {/* Overlay action buttons on the preview */}
+            <View style={styles.imageActions}>
+              <TouchableOpacity
+                style={[styles.imageActionBtn, { backgroundColor: 'rgba(33,150,243,0.85)' }]}
+                onPress={takePhoto}
+                disabled={submitting}
+              >
+                <Text style={styles.imageActionText}>📷 Retake</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.imageActionBtn, { backgroundColor: 'rgba(0,0,0,0.55)' }]}
+                onPress={pickImage}
+                disabled={submitting}
+              >
+                <Text style={styles.imageActionText}>🖼️ Change</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.imageActionBtn, { backgroundColor: 'rgba(229,57,53,0.85)' }]}
+                onPress={() => setImageUri(null)}
+                disabled={submitting}
+              >
+                <Text style={styles.imageActionText}>✕ Remove</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
         )}
-        {/* --- End of New Image Upload Section --- */}
 
+        {/* Notes */}
         <View style={styles.noteSection}>
           <Text style={styles.noteTitle}>📝 Important Notes:</Text>
           <Text style={styles.noteText}>• Be as specific as possible with your description</Text>
@@ -154,8 +241,21 @@ export default function ReportItemScreen({ navigation }) {
           <Text style={styles.noteText}>• False reports may result in account suspension</Text>
         </View>
 
-        <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-          <Text style={styles.submitButtonText}>Submit Report</Text>
+        <TouchableOpacity
+          style={[styles.submitButton, submitting && styles.submitButtonDisabled]}
+          onPress={handleSubmit}
+          disabled={submitting}
+        >
+          {submitting ? (
+            <View style={styles.submitLoading}>
+              <ActivityIndicator color="#fff" style={{ marginRight: 10 }} />
+              <Text style={styles.submitButtonText}>
+                {imageUri ? 'Uploading image…' : 'Saving report…'}
+              </Text>
+            </View>
+          ) : (
+            <Text style={styles.submitButtonText}>Submit Report</Text>
+          )}
         </TouchableOpacity>
       </View>
     </ScrollView>
@@ -231,50 +331,77 @@ const styles = StyleSheet.create({
   textArea: {
     height: 100,
   },
-  // --- New Styles for Image Picker ---
-  imagePickerButton: {
-    backgroundColor: '#f0f8ff',
-    borderWidth: 2,
-    borderColor: '#2196F3',
-    borderStyle: 'dashed',
-    padding: 15,
-    borderRadius: 8,
-    alignItems: 'center',
+  // ── Image option buttons (camera / gallery) ───────────────────────────────
+  imageButtonRow: {
+    flexDirection: 'row',
+    gap: 12,
     marginBottom: 20,
   },
-  imagePickerButtonText: {
-    color: '#2196F3',
-    fontSize: 16,
-    fontWeight: 'bold',
+  imageOptionButton: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: 18,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderStyle: 'dashed',
   },
+  cameraButton: {
+    backgroundColor: '#FFF8F0',
+    borderColor: '#FF9800',
+  },
+  galleryButton: {
+    backgroundColor: '#F0F6FF',
+    borderColor: '#2196F3',
+  },
+  imageOptionIcon: {
+    fontSize: 30,
+    marginBottom: 6,
+  },
+  imageOptionTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#333',
+  },
+  imageOptionSub: {
+    fontSize: 12,
+    color: '#999',
+    marginTop: 2,
+  },
+
+  // ── Image preview ─────────────────────────────────────────────────────────
   imagePreviewContainer: {
     marginBottom: 20,
-    alignItems: 'center',
+    borderRadius: 12,
+    overflow: 'hidden',
     position: 'relative',
   },
   imagePreview: {
     width: '100%',
-    height: 200,
-    borderRadius: 8,
+    height: 210,
+    borderRadius: 12,
     borderWidth: 1,
     borderColor: '#ddd',
     backgroundColor: '#f0f0f0',
   },
-  removeImageButton: {
+  imageActions: {
     position: 'absolute',
-    top: 10,
+    bottom: 10,
+    left: 10,
     right: 10,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
-    paddingVertical: 5,
-    paddingHorizontal: 10,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  imageActionBtn: {
+    paddingVertical: 6,
+    paddingHorizontal: 14,
     borderRadius: 20,
   },
-  removeImageButtonText: {
+  imageActionText: {
     color: '#fff',
     fontSize: 12,
-    fontWeight: 'bold',
+    fontWeight: '700',
   },
-  // --- End of New Styles ---
   noteSection: {
     backgroundColor: '#f0f8ff',
     padding: 15,
@@ -296,6 +423,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#2196F3',
     padding: 15,
     borderRadius: 8,
+    alignItems: 'center',
+  },
+  submitButtonDisabled: {
+    opacity: 0.7,
+  },
+  submitLoading: {
+    flexDirection: 'row',
     alignItems: 'center',
   },
   submitButtonText: {

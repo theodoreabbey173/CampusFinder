@@ -2,46 +2,109 @@ import React, { useState } from 'react';
 import {
   View,
   Text,
-  TextInput,
   TouchableOpacity,
   StyleSheet,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
+import { checkEmailVerified, resendVerificationEmail } from '../backend/authService';
 
-export default function VerificationScreen({ navigation }) {
-  const [code, setCode] = useState('');
+export default function VerificationScreen({ navigation, route }) {
+  const { email, emailSent = true } = route.params ?? {};
+  const [checking,  setChecking]  = useState(false);
+  const [resending, setResending] = useState(false);
+  // Track whether a successful send has happened this session
+  const [hasSent, setHasSent] = useState(emailSent);
 
-  const handleVerify = () => {
-    if (!code || code.length !== 4) {
-      Alert.alert('Error', 'Please enter a valid 4-digit code');
-      return;
+  /** Poll Firebase to see if the user has clicked the email link yet. */
+  const handleCheckVerified = async () => {
+    setChecking(true);
+    try {
+      const verified = await checkEmailVerified();
+      if (verified) {
+        // Reset the navigation stack so the user can't go back to Verification
+        navigation.reset({ index: 0, routes: [{ name: 'Welcome' }] });
+      } else {
+        Alert.alert(
+          'Not Verified Yet',
+          'We couldn\'t confirm your email yet.\n\n• Check your inbox AND spam/junk folder\n• Make sure you clicked the link (not just opened the email)\n• Then tap this button again',
+        );
+      }
+    } catch (err) {
+      Alert.alert('Error', err?.message ?? 'Could not check verification. Please try again.');
+    } finally {
+      setChecking(false);
     }
-    navigation.navigate('Welcome');
+  };
+
+  /** Re-send a fresh verification email. */
+  const handleResend = async () => {
+    setResending(true);
+    try {
+      await resendVerificationEmail();
+      setHasSent(true);
+      Alert.alert(
+        '📬 Email Sent',
+        `A verification link was sent to ${email}.\n\nIf it doesn't appear in your inbox within a minute, check your spam or junk folder.`,
+      );
+    } catch (err) {
+      Alert.alert('Error', err?.message ?? 'Could not resend the verification email. Please try again.');
+    } finally {
+      setResending(false);
+    }
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Verify Your Account</Text>
-      <Text style={styles.subtitle}>
-        We've sent a 4-digit verification code to your email
+      <Text style={styles.icon}>{hasSent ? '📧' : '⚠️'}</Text>
+
+      <Text style={styles.title}>
+        {hasSent ? 'Check Your Email' : 'Email Not Sent'}
       </Text>
 
-      <TextInput
-        style={styles.input}
-        placeholder="Enter 4-digit code"
-        value={code}
-        onChangeText={setCode}
-        keyboardType="numeric"
-        maxLength={4}
-        textAlign="center"
-      />
+      {hasSent ? (
+        <>
+          <Text style={styles.subtitle}>We've sent a verification link to:</Text>
+          <Text style={styles.email}>{email}</Text>
+          <Text style={styles.instructions}>
+            Open the link in the email to verify your account, then tap the button below.{'\n\n'}
+            📁 <Text style={styles.bold}>Don't see it?</Text> Check your <Text style={styles.bold}>spam or junk folder</Text> — Firebase emails sometimes land there.
+          </Text>
+        </>
+      ) : (
+        <>
+          <Text style={styles.email}>{email}</Text>
+          <Text style={styles.instructions}>
+            The verification email couldn't be delivered automatically.{'\n\n'}
+            Tap <Text style={styles.bold}>"Send Verification Email"</Text> below to try again.
+          </Text>
+        </>
+      )}
 
-      <TouchableOpacity style={styles.button} onPress={handleVerify}>
-        <Text style={styles.buttonText}>Verify</Text>
-      </TouchableOpacity>
+      {hasSent && (
+        <TouchableOpacity
+          style={[styles.button, checking && styles.buttonDisabled]}
+          onPress={handleCheckVerified}
+          disabled={checking || resending}
+        >
+          {checking
+            ? <ActivityIndicator color="#fff" />
+            : <Text style={styles.buttonText}>✅ I've Verified My Email</Text>
+          }
+        </TouchableOpacity>
+      )}
 
-      <TouchableOpacity style={styles.linkButton}>
-        <Text style={styles.linkText}>Didn't receive the code? Resend</Text>
+      <TouchableOpacity
+        style={[styles.resendButton, (!hasSent) && styles.resendButtonPrimary]}
+        onPress={handleResend}
+        disabled={checking || resending}
+      >
+        {resending
+          ? <ActivityIndicator color={hasSent ? '#2196F3' : '#fff'} size="small" />
+          : <Text style={[styles.resendText, (!hasSent) && styles.resendTextPrimary]}>
+              {hasSent ? 'Didn\'t receive it? Resend Email' : '📨 Send Verification Email'}
+            </Text>
+        }
       </TouchableOpacity>
     </View>
   );
@@ -53,6 +116,11 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: '#fff',
     justifyContent: 'center',
+    alignItems: 'center',
+  },
+  icon: {
+    fontSize: 72,
+    marginBottom: 20,
   },
   title: {
     fontSize: 28,
@@ -64,37 +132,64 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 16,
     textAlign: 'center',
-    marginBottom: 40,
     color: '#666',
-    lineHeight: 22,
+    marginBottom: 6,
   },
-  input: {
-    borderWidth: 1,
-    borderColor: '#ddd',
-    padding: 20,
-    marginBottom: 30,
-    borderRadius: 8,
-    fontSize: 24,
-    backgroundColor: '#f9f9f9',
-    letterSpacing: 8,
+  email: {
+    fontSize: 17,
+    fontWeight: 'bold',
+    color: '#2196F3',
+    marginBottom: 24,
+    textAlign: 'center',
+  },
+  instructions: {
+    fontSize: 15,
+    textAlign: 'center',
+    color: '#555',
+    lineHeight: 22,
+    marginBottom: 36,
+    paddingHorizontal: 10,
   },
   button: {
     backgroundColor: '#2196F3',
     padding: 15,
     borderRadius: 8,
     alignItems: 'center',
+    width: '100%',
     marginBottom: 20,
+  },
+  buttonDisabled: {
+    opacity: 0.6,
   },
   buttonText: {
     color: '#fff',
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: 'bold',
   },
-  linkButton: {
-    alignItems: 'center',
+  bold: {
+    fontWeight: 'bold',
+    color: '#333',
   },
-  linkText: {
+  resendButton: {
+    alignItems: 'center',
+    padding: 10,
+    marginTop: 4,
+  },
+  resendButtonPrimary: {
+    backgroundColor: '#2196F3',
+    borderRadius: 8,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    width: '100%',
+    marginTop: 12,
+  },
+  resendText: {
     color: '#2196F3',
     fontSize: 16,
+  },
+  resendTextPrimary: {
+    color: '#fff',
+    fontSize: 17,
+    fontWeight: 'bold',
   },
 });

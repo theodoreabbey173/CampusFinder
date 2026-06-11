@@ -8,47 +8,45 @@ import {
   Alert,
   ActivityIndicator,
 } from 'react-native';
-import { registerUser } from '../backend/authService';
+import { loginUser } from '../backend/authService';
 
-export default function SignUpScreen({ navigation }) {
-  const [name,     setName]     = useState('');
+export default function LoginScreen({ navigation }) {
   const [email,    setEmail]    = useState('');
   const [password, setPassword] = useState('');
   const [loading,  setLoading]  = useState(false);
 
-  const handleSignUp = async () => {
-    if (!name || !email || !password) {
-      Alert.alert('Error', 'Please fill in all fields');
-      return;
-    }
-    if (password.length < 6) {
-      Alert.alert('Error', 'Password must be at least 6 characters.');
+  const handleLogin = async () => {
+    if (!email || !password) {
+      Alert.alert('Error', 'Please enter your email and password.');
       return;
     }
 
     setLoading(true);
     try {
-      const { emailSent } = await registerUser(name, email, password);
-      // Navigate to verification screen; pass whether the email was actually sent
-      // so the screen can show appropriate guidance if delivery failed.
-      navigation.navigate('Verification', { email, emailSent });
+      const user = await loginUser(email, password);
+
+      if (!user.emailVerified) {
+        // Account exists but email not yet confirmed — send them to verification
+        navigation.navigate('Verification', { email });
+      } else {
+        navigation.navigate('Welcome');
+      }
     } catch (error) {
-      let message = 'Sign up failed. Please try again.';
+      let message = 'Login failed. Please try again.';
       switch (error.code) {
-        case 'auth/email-already-in-use':
-          message = 'This email is already registered. Please sign in instead.';
+        case 'auth/user-not-found':
+        case 'auth/wrong-password':
+        case 'auth/invalid-credential':
+          message = 'Incorrect email or password.';
           break;
         case 'auth/invalid-email':
           message = 'Please enter a valid email address.';
           break;
-        case 'auth/weak-password':
-          message = 'Password should be at least 6 characters.';
-          break;
-        case 'auth/network-request-failed':
-          message = 'No internet connection. Please check your network.';
+        case 'auth/too-many-requests':
+          message = 'Too many failed attempts. Please try again later.';
           break;
       }
-      Alert.alert('Sign Up Error', message);
+      Alert.alert('Login Error', message);
     } finally {
       setLoading(false);
     }
@@ -56,17 +54,8 @@ export default function SignUpScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Create Account</Text>
-      <Text style={styles.subtitle}>Join CampusFinder to report and find lost items</Text>
-
-      <TextInput
-        style={styles.input}
-        placeholder="Full Name"
-        value={name}
-        onChangeText={setName}
-        autoCapitalize="words"
-        editable={!loading}
-      />
+      <Text style={styles.title}>Welcome Back</Text>
+      <Text style={styles.subtitle}>Sign in to your CampusFinder account</Text>
 
       <TextInput
         style={styles.input}
@@ -80,7 +69,7 @@ export default function SignUpScreen({ navigation }) {
 
       <TextInput
         style={styles.input}
-        placeholder="Password (min 6 characters)"
+        placeholder="Password"
         value={password}
         onChangeText={setPassword}
         secureTextEntry
@@ -89,23 +78,21 @@ export default function SignUpScreen({ navigation }) {
 
       <TouchableOpacity
         style={[styles.button, loading && styles.buttonDisabled]}
-        onPress={handleSignUp}
+        onPress={handleLogin}
         disabled={loading}
       >
         {loading
           ? <ActivityIndicator color="#fff" />
-          : <Text style={styles.buttonText}>Sign Up</Text>
+          : <Text style={styles.buttonText}>Sign In</Text>
         }
       </TouchableOpacity>
 
       <TouchableOpacity
         style={styles.linkButton}
-        onPress={() => navigation.navigate('Login')}
+        onPress={() => navigation.navigate('SignUp')}
         disabled={loading}
       >
-        <Text style={styles.linkText}>
-          Already have an account? <Text style={styles.linkBold}>Sign In</Text>
-        </Text>
+        <Text style={styles.linkText}>Don't have an account? <Text style={styles.linkBold}>Sign Up</Text></Text>
       </TouchableOpacity>
     </View>
   );
