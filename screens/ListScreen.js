@@ -361,7 +361,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
 
-  // ── Nav header ────────────────────────────────────────────────────────────
+  // ── Nav header ────────────────────────────────────────────────────
   navLeft: {
     flexDirection: 'row',
     alignItems: 'center',
