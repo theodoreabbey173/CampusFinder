@@ -17,6 +17,7 @@ A mobile application designed to help students at University of Ghana Legon repo
 ![React Native](https://img.shields.io/badge/React_Native-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
 ![Expo](https://img.shields.io/badge/expo-1C1E24?style=for-the-badge&logo=expo&logoColor=#D04A37)
 ![JavaScript](https://img.shields.io/badge/javascript-%23323330.svg?style=for-the-badge&logo=javascript&logoColor=%23F7DF1E)
+![Firebase](https://img.shields.io/badge/firebase-ffca28?style=for-the-badge&logo=firebase&logoColor=black)
 
 ## 📋 About The Project
 
@@ -24,12 +25,14 @@ CampusFinder is a comprehensive lost and found solution specifically designed fo
 
 ### Key Features
 
-- **Item Reporting System**: Easy-to-use forms for reporting both lost and found items
+- **Item Reporting System**: Easy-to-use forms for reporting both lost and found items with image upload
 - **Visual Item Browse**: Browse items with images and detailed descriptions
-- **Secure Communication**: End-to-end encrypted chat system for user safety
-- **User Authentication**: Secure sign-up and verification process
-- **Location-Based Tracking**: Items are categorized by campus locations
-- **Real-time Updates**: Stay updated on new items and messages
+- **Secure Communication**: Encrypted chat system for user safety
+- **User Authentication**: Firebase-backed sign-up, login, and email verification
+- **Inbox / Chat Management**: Centralised inbox to view and manage all active conversations
+- **Location-Based Tracking**: Items are categorised by campus locations
+- **Push Notifications**: Stay updated on new items and messages
+- **Real-time Updates**: Firebase-powered live data syncing
 
 ## 🏗️ App Architecture
 
@@ -37,37 +40,52 @@ The application follows three main user flows:
 
 ### 1. Sign Up & Onboarding Flow
 - **SignUp Screen**: User registration with name, email, and password
+- **Login Screen**: Existing user sign-in
 - **Verification Screen**: 4-digit email verification code input
 - **Welcome Screen**: App introduction and feature overview
 
+> Firebase Auth state determines the initial route automatically:
+> - Not signed in → Auth screens (SignUp / Login)
+> - Signed in but email unverified → Verification screen
+> - Signed in & verified → Full app
+
 ### 2. Lost & Found Reporting Flow
-- **Item List Screen**: Display all reported items with images and filters
-- **Item Details Screen**: Comprehensive item information and contact options
-- **Report Item Screen**: Form to report new lost or found items
+- **List Screen**: Display all reported items with images and filters
+- **Details Screen**: Comprehensive item information and contact options
+- **Report Item Screen**: Form to report new lost or found items with image picker
 
 ### 3. Secure Communication Flow
-- **Chat Screen**: Encrypted messaging between users
-- **Report Confirmation Screen**: Communication success confirmation with safety tips
+- **Inbox Screen**: Overview of all active chat conversations
+- **Chat Screen**: Encrypted real-time messaging between users
+- **Confirmation Screen**: Report submission success confirmation with safety tips
 
 ## 🛠️ Tools & Technologies Used
 
 ### Frontend Framework
 - **React Native**: Cross-platform mobile development framework
-- **Expo Go**: Development platform for React Native applications
+- **Expo**: Development platform including image picker and push notifications
+
+### Backend & Database
+- **Firebase**: Authentication, real-time database, and cloud storage
+- **firebase/auth**: `onIdTokenChanged` listener for live auth state management
 
 ### Navigation
 - **@react-navigation/native**: Primary navigation library
 - **@react-navigation/native-stack**: Stack-based navigation system
 
+### Storage & Security
+- **AsyncStorage**: Local persistent storage (`@react-native-async-storage/async-storage`)
+- **CryptoJS**: Client-side message encryption
+
 ### Development Environment
 - **JavaScript ES6+**: Modern JavaScript features and syntax
-- **React Hooks**: useState for state management
+- **React Hooks**: `useState`, `useEffect` for state and lifecycle management
 - **StyleSheet**: React Native's built-in styling system
 
 ### Design & UI
 - **Custom UI Components**: Handcrafted components for optimal user experience
 - **Responsive Design**: Adaptive layouts for different screen sizes
-- **Image Support**: Local and remote image handling capabilities
+- **expo-image-picker**: Native image selection for item reports
 
 ## 📱 Screenshots
 The process is illustrated beginning on the left side of the diagram.
@@ -91,26 +109,38 @@ The process is illustrated beginning on the left side of the diagram.
 - npm or yarn package manager
 - Expo CLI
 - Expo Go app on your mobile device
+- A Firebase project (Authentication + Firestore/Realtime Database enabled)
 
 ### Installation
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/campusfinder.git
-   cd campusfinder
+   git clone https://github.com/theodoreabbey173/CampusFinder.git
+   cd CampusFinder
    ```
 
 2. **Install dependencies**
    ```bash
    npm install
-   # or
-   yarn install
    ```
 
-3. **Install navigation dependencies**
-   ```bash
-   npm install @react-navigation/native @react-navigation/native-stack
-   npx expo install react-native-screens react-native-safe-area-context
+3. **Configure Firebase**  
+   Create a `firebaseConfig.js` file in the project root and add your Firebase project credentials:
+   ```js
+   import { initializeApp } from 'firebase/app';
+   import { getAuth } from 'firebase/auth';
+
+   const firebaseConfig = {
+     apiKey: "YOUR_API_KEY",
+     authDomain: "YOUR_AUTH_DOMAIN",
+     projectId: "YOUR_PROJECT_ID",
+     storageBucket: "YOUR_STORAGE_BUCKET",
+     messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+     appId: "YOUR_APP_ID"
+   };
+
+   const app = initializeApp(firebaseConfig);
+   export const auth = getAuth(app);
    ```
 
 4. **Start the development server**
@@ -126,19 +156,22 @@ The process is illustrated beginning on the left side of the diagram.
 
 ```
 CampusFinder/
-├── App.js                          # Main navigation setup
-├── assets
-│   
+├── App.js                          # Main navigation setup & Firebase auth listener
+├── firebaseConfig.js               # Firebase project configuration
+├── index.js                        # App entry point
+├── assets/                         # App icons, splash screen, and images
 ├── screens/
-│   ├── screenshots/               # App screenshots
-│   ├── SignUpScreen.js            # User registration
-│   ├── VerificationScreen.js      # Email verification
-│   ├── WelcomeScreen.js           # App welcome & onboarding
-│   ├── ItemListScreen.js          # Browse all items
-│   ├── ItemDetailsScreen.js       # Individual item details
-│   ├── ReportItemScreen.js        # Report new items
-│   ├── ChatScreen.js              # Secure messaging
-│   └── ReportConfirmationScreen.js # Success confirmation
+│   ├── screenshots/                # App screenshots
+│   ├── SignUpScreen.js             # User registration
+│   ├── LoginScreen.js              # User sign-in
+│   ├── VerificationScreen.js       # Email verification
+│   ├── WelcomeScreen.js            # App welcome & onboarding
+│   ├── ListScreen.js               # Browse all items
+│   ├── DetailsScreen.js            # Individual item details
+│   ├── ReportItemScreen.js         # Report new items (with image picker)
+│   ├── InboxScreen.js              # All active chat conversations
+│   ├── ChatScreen.js               # Secure real-time messaging
+│   └── ConfirmationScreen.js       # Report submission success
 ├── package.json
 └── README.md
 ```
@@ -148,10 +181,11 @@ CampusFinder/
 
 ## 🔐 Security Features
 
-- **Encrypted Communication**: All messages are secured
+- **Firebase Authentication**: Secure email/password auth with email verification gate
+- **Encrypted Communication**: Messages secured with CryptoJS before transmission
 - **Privacy Protection**: User information is kept confidential
 - **Safe Meeting Guidelines**: In-app safety tips for user meetings
-- **Report System**: Users can report inappropriate behavior
+- **Report System**: Users can report inappropriate behaviour
 
 ## 🎯 Future Enhancements
 
@@ -167,7 +201,7 @@ CampusFinder/
 
 - Images may take time to load on slower connections
 - Chat requires active internet connection
-- Some features optimized for Android (testing on iOS recommended)
+- Some features optimised for Android (testing on iOS recommended)
 
 ## 🤝 Contributing
 

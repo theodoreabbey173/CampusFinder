@@ -18,7 +18,6 @@ import { auth } from '../firebaseConfig';
 
 const FILTERS = ['All', 'Lost', 'Found'];
 
-// Returns true if the item was posted within the last hour
 const isNewItem = (createdAt) => {
   if (!createdAt) return false;
   const ts = createdAt?.toDate ? createdAt.toDate() : new Date(createdAt);
@@ -32,34 +31,47 @@ export default function ListScreen({ navigation }) {
   const [activeFilter, setActiveFilter] = useState('All');
   const [chatCount,    setChatCount]    = useState(0);
 
-  // ── Header logout + inbox buttons ────────────────────────────────────────
   useLayoutEffect(() => {
     navigation.setOptions({
-      headerRight: () => (
-        <View style={styles.headerButtons}>
-          {/* Inbox icon with badge */}
-          <TouchableOpacity
-            onPress={() => navigation.navigate('Inbox')}
-            style={styles.inboxBtn}
-          >
-            <Text style={styles.inboxIcon}>💬</Text>
-            {chatCount > 0 && (
-              <View style={styles.inboxBadge}>
-                <Text style={styles.inboxBadgeText}>
-                  {chatCount > 9 ? '9+' : chatCount}
-                </Text>
-              </View>
-            )}
-          </TouchableOpacity>
-
-          {/* Logout */}
-          <TouchableOpacity onPress={handleLogout} style={styles.logoutBtn}>
-            <Text style={styles.logoutText}>Logout</Text>
-          </TouchableOpacity>
+      headerTitle: () => null,
+      headerLeft: () => (
+        <View style={styles.navLeft}>
+          <Image
+            source={require('../assets/leg.jpg')}
+            style={styles.navLogo}
+            resizeMode="contain"
+          />
+          <Text>
+            <Text style={styles.navCampus}>Campus</Text>
+            <Text style={styles.navFinder}>Finder</Text>
+          </Text>
         </View>
       ),
-      headerStyle:      { backgroundColor: '#F0F6FF', elevation: 0, shadowOpacity: 0 },
-      headerTitleStyle: { color: '#1a1a2e', fontWeight: '700' },
+      headerLeftContainerStyle: { paddingLeft: 16 },
+      headerRight: () => (
+        <TouchableOpacity
+          onPress={() => navigation.navigate('Inbox')}
+          style={styles.inboxBtn}
+        >
+          <Text style={styles.inboxIcon}>💬</Text>
+          {chatCount > 0 && (
+            <View style={styles.inboxBadge}>
+              <Text style={styles.inboxBadgeText}>
+                {chatCount > 9 ? '9+' : chatCount}
+              </Text>
+            </View>
+          )}
+        </TouchableOpacity>
+      ),
+      headerRightContainerStyle: { paddingRight: 16 },
+      headerStyle: {
+        backgroundColor: '#fff',
+        elevation: 3,
+        shadowColor: '#000',
+        shadowOpacity: 0.08,
+        shadowRadius: 4,
+        shadowOffset: { width: 0, height: 2 },
+      },
     });
   }, [navigation, chatCount]);
 
@@ -81,7 +93,6 @@ export default function ListScreen({ navigation }) {
     ]);
   };
 
-  // ── Subscribe to items ────────────────────────────────────────────────────
   useEffect(() => {
     const unsubscribe = subscribeToItems((fetchedItems) => {
       setItems(fetchedItems);
@@ -90,7 +101,6 @@ export default function ListScreen({ navigation }) {
     return unsubscribe;
   }, []);
 
-  // ── Chat count for inbox badge ────────────────────────────────────────────
   useEffect(() => {
     const currentUser = auth.currentUser;
     if (!currentUser) return;
@@ -101,19 +111,16 @@ export default function ListScreen({ navigation }) {
     return unsubscribe;
   }, []);
 
-  // ── Derived stats ─────────────────────────────────────────────────────────
   const stats = useMemo(() => ({
     total: items.length,
     lost:  items.filter((i) => i.type === 'Lost').length,
     found: items.filter((i) => i.type === 'Found').length,
   }), [items]);
 
-  // ── Filtered + searched list ──────────────────────────────────────────────
   const filteredItems = useMemo(() => {
     const q = searchQuery.toLowerCase().trim();
     return items.filter((item) => {
-      const matchesFilter =
-        activeFilter === 'All' || item.type === activeFilter;
+      const matchesFilter = activeFilter === 'All' || item.type === activeFilter;
       const matchesSearch =
         !q ||
         item.name?.toLowerCase().includes(q) ||
@@ -123,15 +130,13 @@ export default function ListScreen({ navigation }) {
     });
   }, [items, activeFilter, searchQuery]);
 
-  // ── Handlers ──────────────────────────────────────────────────────────────
-  const handleItemPress   = (item) => navigation.navigate('ItemDetails', { item });
-  const handleReportItem  = ()     => navigation.navigate('ReportItem');
+  const handleItemPress  = (item) => navigation.navigate('ItemDetails', { item });
+  const handleReportItem = ()     => navigation.navigate('ReportItem');
 
-  // ── Card renderer ─────────────────────────────────────────────────────────
   const renderItem = ({ item }) => {
-    const isLost    = item.type === 'Lost';
-    const accentColor = isLost ? '#FF5722' : '#4CAF50';
-    const tagBg       = isLost ? '#FFF3F0' : '#F0FBF1';
+    const isLost      = item.type === 'Lost';
+    const accentColor = isLost ? '#FF5722' : '#16a97a';
+    const tagBg       = isLost ? '#FFF3F0' : '#EDFAF5';
 
     return (
       <TouchableOpacity
@@ -139,7 +144,6 @@ export default function ListScreen({ navigation }) {
         onPress={() => handleItemPress(item)}
         activeOpacity={0.85}
       >
-        {/* NEW badge -------------------------------------------------------- */}
         {isNewItem(item.createdAt) && (
           <View style={styles.newBadge}>
             <Text style={styles.newBadgeText}>NEW</Text>
@@ -147,33 +151,29 @@ export default function ListScreen({ navigation }) {
         )}
 
         <View style={styles.itemContent}>
-          {/* Thumbnail ------------------------------------------------------- */}
           <Image
             source={
               item.imageUrl
                 ? { uri: item.imageUrl }
-                : { uri: 'https://via.placeholder.com/90x90/e8eaf6/9fa8da?text=?' }
+                : { uri: 'https://via.placeholder.com/80x80/e8eaf6/9fa8da?text=?' }
             }
             style={styles.itemImage}
             resizeMode="cover"
           />
 
-          {/* Info ------------------------------------------------------------ */}
           <View style={styles.itemInfo}>
-            {/* Title row */}
             <View style={styles.itemHeader}>
               <Text style={styles.itemName} numberOfLines={1}>{item.name}</Text>
-              <View style={[styles.typeTag, { backgroundColor: tagBg, borderColor: accentColor }]}>
+              <View style={[styles.typeTag, { backgroundColor: tagBg }]}>
+                <View style={[styles.typeDot, { backgroundColor: accentColor }]} />
                 <Text style={[styles.typeText, { color: accentColor }]}>{item.type}</Text>
               </View>
             </View>
 
-            {/* Description preview */}
             {item.description ? (
               <Text style={styles.itemDesc} numberOfLines={1}>{item.description}</Text>
             ) : null}
 
-            {/* Meta row */}
             <Text style={styles.itemLocation}>📍 {item.location}</Text>
             <View style={styles.metaRow}>
               <Text style={styles.itemDate}>🕒 {formatItemDate(item.createdAt)}</Text>
@@ -187,7 +187,6 @@ export default function ListScreen({ navigation }) {
     );
   };
 
-  // ── Loading state ─────────────────────────────────────────────────────────
   if (loading) {
     return (
       <View style={styles.centered}>
@@ -197,20 +196,14 @@ export default function ListScreen({ navigation }) {
     );
   }
 
-  // ── Main render ───────────────────────────────────────────────────────────
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#F0F6FF" />
+      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
 
-      {/* ── Page header ──────────────────────────────────────────────────── */}
-      <View style={styles.pageHeader}>
-        <View>
-          <Text style={styles.title}>Lost &amp; Found Items</Text>
-          <Text style={styles.subtitle}>Tap an item to see full details</Text>
-        </View>
-        <TouchableOpacity style={styles.reportButton} onPress={handleReportItem}>
-          <Text style={styles.reportButtonText}>＋ Report</Text>
-        </TouchableOpacity>
+      {/* ── Page title ───────────────────────────────────────────────────── */}
+      <View style={styles.pageTitle}>
+        <Text style={styles.pageTitleText}>Lost & Found</Text>
+        <Text style={styles.pageTitleSub}>Tap any item to see full details and chat.</Text>
       </View>
 
       {/* ── Stats banner ─────────────────────────────────────────────────── */}
@@ -226,7 +219,7 @@ export default function ListScreen({ navigation }) {
         </View>
         <View style={styles.statDivider} />
         <View style={styles.statItem}>
-          <Text style={[styles.statNumber, { color: '#4CAF50' }]}>{stats.found}</Text>
+          <Text style={[styles.statNumber, { color: '#16a97a' }]}>{stats.found}</Text>
           <Text style={styles.statLabel}>Found</Text>
         </View>
       </View>
@@ -236,8 +229,8 @@ export default function ListScreen({ navigation }) {
         <Text style={styles.searchIcon}>🔍</Text>
         <TextInput
           style={styles.searchInput}
-          placeholder="Search by name, location…"
-          placeholderTextColor="#aaa"
+          placeholder="Search by name or location..."
+          placeholderTextColor="#bbb"
           value={searchQuery}
           onChangeText={setSearchQuery}
           returnKeyType="search"
@@ -254,25 +247,21 @@ export default function ListScreen({ navigation }) {
       <View style={styles.filterRow}>
         {FILTERS.map((f) => {
           const isActive = activeFilter === f;
-          const tabColor =
-            f === 'Lost' ? '#FF5722' : f === 'Found' ? '#4CAF50' : '#2196F3';
+          const count    = f === 'All' ? stats.total : f === 'Lost' ? stats.lost : stats.found;
+          const tabColor = f === 'Lost' ? '#FF5722' : f === 'Found' ? '#16a97a' : '#1a237e';
           return (
             <TouchableOpacity
               key={f}
               style={[
                 styles.filterTab,
-                isActive && { backgroundColor: tabColor, borderColor: tabColor },
+                isActive
+                  ? { backgroundColor: tabColor, borderColor: tabColor }
+                  : { borderColor: '#ddd' },
               ]}
               onPress={() => setActiveFilter(f)}
             >
-              <Text
-                style={[
-                  styles.filterTabText,
-                  isActive && { color: '#fff' },
-                ]}
-              >
-                {f === 'Lost' ? '🔴 ' : f === 'Found' ? '🟢 ' : '📦 '}
-                {f}
+              <Text style={[styles.filterTabText, isActive && { color: '#fff' }]}>
+                {f} {count}
               </Text>
             </TouchableOpacity>
           );
@@ -280,42 +269,50 @@ export default function ListScreen({ navigation }) {
       </View>
 
       {/* ── List / empty state ───────────────────────────────────────────── */}
-      {filteredItems.length === 0 ? (
-        <View style={styles.centered}>
-          <Text style={styles.emptyIcon}>
-            {searchQuery ? '🔎' : '📭'}
-          </Text>
-          <Text style={styles.emptyTitle}>
-            {searchQuery ? 'No results found' : 'No items yet'}
-          </Text>
-          <Text style={styles.emptySubtitle}>
-            {searchQuery
-              ? `Nothing matched "${searchQuery}". Try a different keyword.`
-              : 'Be the first to report a lost or found item on campus!'}
-          </Text>
-          {searchQuery ? (
-            <TouchableOpacity
-              style={styles.clearSearchBtn}
-              onPress={() => setSearchQuery('')}
-            >
-              <Text style={styles.clearSearchBtnText}>Clear Search</Text>
-            </TouchableOpacity>
-          ) : null}
-        </View>
-      ) : (
-        <FlatList
-          data={filteredItems}
-          keyExtractor={(item) => item.id}
-          renderItem={renderItem}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.listContainer}
-        />
-      )}
+      <View style={{ flex: 1 }}>
+        {filteredItems.length === 0 ? (
+          <View style={styles.centered}>
+            <Text style={styles.emptyIcon}>{searchQuery ? '🔎' : '📭'}</Text>
+            <Text style={styles.emptyTitle}>
+              {searchQuery ? 'No results found' : 'No items yet'}
+            </Text>
+            <Text style={styles.emptySubtitle}>
+              {searchQuery
+                ? `Nothing matched "${searchQuery}". Try a different keyword.`
+                : 'Be the first to report a lost or found item on campus!'}
+            </Text>
+            {searchQuery ? (
+              <TouchableOpacity style={styles.clearSearchBtn} onPress={() => setSearchQuery('')}>
+                <Text style={styles.clearSearchBtnText}>Clear Search</Text>
+              </TouchableOpacity>
+            ) : null}
+          </View>
+        ) : (
+          <FlatList
+            data={filteredItems}
+            keyExtractor={(item) => item.id}
+            renderItem={renderItem}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.listContainer}
+          />
+        )}
+      </View>
+
+      {/* ── Floating Report button ────────────────────────────────────────── */}
+      <TouchableOpacity style={styles.fab} onPress={handleReportItem} activeOpacity={0.88}>
+        <Text style={styles.fabText}>＋ Report</Text>
+      </TouchableOpacity>
+
+      {/* ── Footer logout ────────────────────────────────────────────────── */}
+      <View style={styles.footer}>
+        <TouchableOpacity style={styles.logoutFooterBtn} onPress={handleLogout}>
+          <Text style={styles.logoutFooterText}> Log Out </Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -364,44 +361,81 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
 
-  // ── Page header ───────────────────────────────────────────────────────────
-  pageHeader: {
+  // ── Nav header ────────────────────────────────────────────────────────────
+  navLeft: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#F0F6FF',
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: '#DDE8F8',
+    gap: 8,
   },
-  title: {
-    fontSize: 22,
+  navLogo: {
+    height: 30,
+    width: 30,
+    borderRadius: 6,
+  },
+  navCampus: {
+    fontSize: 17,
+    fontWeight: '800',
+    color: '#1a237e',
+  },
+  navFinder: {
+    fontSize: 17,
+    fontWeight: '800',
+    color: '#16a97a',
+  },
+
+  // ── Nav inbox button ──────────────────────────────────────────────────────
+  inboxBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#f0f4ff',
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  inboxIcon: {
+    fontSize: 20,
+  },
+  inboxBadge: {
+    position: 'absolute',
+    top: 2,
+    right: 2,
+    backgroundColor: '#E53935',
+    borderRadius: 8,
+    minWidth: 16,
+    height: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 3,
+  },
+  inboxBadgeText: {
+    color: '#fff',
+    fontSize: 9,
+    fontWeight: '700',
+  },
+
+  // ── Page title ────────────────────────────────────────────────────────────
+  pageTitle: {
+    backgroundColor: '#fff',
+    paddingHorizontal: 20,
+    paddingTop: 18,
+    paddingBottom: 14,
+  },
+  pageTitleText: {
+    fontSize: 26,
     fontWeight: '800',
     color: '#1a1a2e',
-    letterSpacing: 0.3,
+    letterSpacing: 0.2,
   },
-  subtitle: {
-    fontSize: 12,
-    color: '#888',
-    marginTop: 2,
-  },
-  reportButton: {
-    backgroundColor: '#2196F3',
-    paddingHorizontal: 16,
-    paddingVertical: 9,
-    borderRadius: 22,
-    shadowColor: '#2196F3',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.35,
-    shadowRadius: 6,
-    elevation: 5,
-  },
-  reportButtonText: {
-    color: '#fff',
-    fontWeight: '700',
-    fontSize: 14,
+  pageTitleSub: {
+    fontSize: 13,
+    color: '#999',
+    marginTop: 3,
   },
 
   // ── Stats banner ──────────────────────────────────────────────────────────
@@ -409,9 +443,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     backgroundColor: '#fff',
     marginHorizontal: 16,
-    marginTop: 14,
+    marginTop: 12,
     borderRadius: 14,
-    paddingVertical: 12,
+    paddingVertical: 14,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.07,
@@ -423,7 +457,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   statNumber: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: '800',
     color: '#1a1a2e',
   },
@@ -451,7 +485,7 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.07,
+    shadowOpacity: 0.06,
     shadowRadius: 4,
     elevation: 2,
   },
@@ -463,7 +497,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 15,
     color: '#333',
-    paddingVertical: 9,
+    paddingVertical: 10,
   },
   clearBtn: {
     padding: 4,
@@ -484,16 +518,15 @@ const styles = StyleSheet.create({
   },
   filterTab: {
     flex: 1,
-    paddingVertical: 7,
-    borderRadius: 20,
+    paddingVertical: 8,
+    borderRadius: 22,
     borderWidth: 1.5,
-    borderColor: '#ddd',
     alignItems: 'center',
     backgroundColor: '#fff',
   },
   filterTabText: {
     fontSize: 13,
-    fontWeight: '600',
+    fontWeight: '700',
     color: '#555',
   },
 
@@ -501,6 +534,7 @@ const styles = StyleSheet.create({
   listContainer: {
     padding: 16,
     paddingTop: 10,
+    paddingBottom: 90,
   },
 
   // ── Item card ─────────────────────────────────────────────────────────────
@@ -509,19 +543,19 @@ const styles = StyleSheet.create({
     padding: 14,
     borderRadius: 14,
     marginBottom: 12,
-    borderLeftWidth: 5,
+    borderLeftWidth: 4,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.09,
+    shadowOpacity: 0.07,
     shadowRadius: 6,
-    elevation: 4,
+    elevation: 3,
     overflow: 'visible',
   },
   newBadge: {
     position: 'absolute',
     top: -6,
     right: 12,
-    backgroundColor: '#FF1744',
+    backgroundColor: '#FF6D00',
     borderRadius: 8,
     paddingHorizontal: 8,
     paddingVertical: 2,
@@ -538,13 +572,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   itemImage: {
-    width: 90,
-    height: 90,
+    width: 80,
+    height: 80,
     borderRadius: 12,
     marginRight: 14,
     backgroundColor: '#e8eaf6',
-    borderWidth: 1.5,
-    borderColor: '#e0e0e0',
   },
   itemInfo: {
     flex: 1,
@@ -556,29 +588,33 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   itemName: {
-    fontSize: 17,
+    fontSize: 16,
     fontWeight: '700',
     color: '#1a1a2e',
     flex: 1,
     marginRight: 8,
-    letterSpacing: 0.2,
   },
   typeTag: {
-    paddingHorizontal: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
     paddingVertical: 3,
-    borderRadius: 12,
-    borderWidth: 1.2,
+    borderRadius: 10,
+    gap: 4,
+  },
+  typeDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 4,
   },
   typeText: {
     fontSize: 11,
     fontWeight: '700',
-    letterSpacing: 0.3,
   },
   itemDesc: {
     fontSize: 13,
-    color: '#888',
+    color: '#999',
     marginBottom: 5,
-    fontStyle: 'italic',
   },
   itemLocation: {
     fontSize: 13,
@@ -593,50 +629,52 @@ const styles = StyleSheet.create({
   },
   itemDate: {
     fontSize: 12,
-    color: '#aaa',
+    color: '#bbb',
   },
   itemReporter: {
     fontSize: 12,
-    color: '#aaa',
+    color: '#bbb',
   },
 
-  // ── Nav logout ────────────────────────────────────────────────────────────
-  headerButtons: {
-    flexDirection:  'row',
-    alignItems:     'center',
-    gap:             4,
+  // ── Floating Report button ─────────────────────────────────────────────────
+  fab: {
+    position: 'absolute',
+    bottom: 72,
+    right: 20,
+    backgroundColor: '#1a237e',
+    borderRadius: 28,
+    paddingHorizontal: 22,
+    paddingVertical: 14,
+    shadowColor: '#1a237e',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
+    elevation: 8,
   },
-  inboxBtn: {
-    paddingHorizontal: 8,
-    paddingVertical:   6,
-    position:          'relative',
-  },
-  inboxIcon: {
-    fontSize: 22,
-  },
-  inboxBadge: {
-    position:        'absolute',
-    top:              2,
-    right:            2,
-    backgroundColor: '#E53935',
-    borderRadius:    8,
-    minWidth:        16,
-    height:          16,
-    justifyContent:  'center',
-    alignItems:      'center',
-    paddingHorizontal: 3,
-  },
-  inboxBadgeText: {
-    color:      '#fff',
-    fontSize:    9,
+  fabText: {
+    color: '#fff',
     fontWeight: '700',
+    fontSize: 15,
+    letterSpacing: 0.3,
   },
-  logoutBtn: {
-    marginRight: 4,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
+
+  // ── Footer logout ─────────────────────────────────────────────────────────
+  footer: {
+    backgroundColor: '#fff',
+    borderTopWidth: 1,
+    borderTopColor: '#eee',
+    paddingVertical: 14,
+    paddingHorizontal: 24,
+    alignItems: 'center',
   },
-  logoutText: {
+  logoutFooterBtn: {
+    paddingHorizontal: 36,
+    paddingVertical: 11,
+    borderRadius: 24,
+    borderWidth: 1.5,
+    borderColor: '#E53935',
+  },
+  logoutFooterText: {
     color: '#E53935',
     fontSize: 15,
     fontWeight: '600',
