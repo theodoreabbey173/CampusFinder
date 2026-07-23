@@ -61,9 +61,6 @@ export default function ConfirmationScreen({ navigation }) {
           <Text style={styles.primaryButtonText}>Back to Items</Text>
         </TouchableOpacity>
         
-        <TouchableOpacity style={styles.secondaryButton} onPress={handleStartNewChat}>
-          <Text style={styles.secondaryButtonText}>Find More Items</Text>
-        </TouchableOpacity>
       </View>
     </View>
   );

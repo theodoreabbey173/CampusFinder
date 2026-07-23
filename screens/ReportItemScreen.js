@@ -10,6 +10,7 @@ import {
   Image,
   ActivityIndicator,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
 import { auth } from '../firebaseConfig';
 import { createItem } from '../backend/itemsService';
@@ -120,8 +121,19 @@ export default function ReportItemScreen({ navigation }) {
   // ── Render ────────────────────────────────────────────────────────────────────
 
   return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.title}>Report an Item</Text>
+    <SafeAreaView style={styles.container} edges={['top']}>
+      <View style={styles.header}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => navigation.canGoBack() && navigation.goBack()}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.backIcon}>‹</Text>
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Report an Item</Text>
+      </View>
+
+      <ScrollView style={styles.scrollArea}>
       <Text style={styles.subtitle}>
         Help others by reporting lost or found items on campus
       </Text>
@@ -258,7 +270,8 @@ export default function ReportItemScreen({ navigation }) {
           )}
         </TouchableOpacity>
       </View>
-    </ScrollView>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
@@ -267,17 +280,40 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
   },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginTop: 20,
-    marginBottom: 10,
-    color: '#333',
+  // ── Header ─────────────────────────────────────────────────────────────────
+  header: {
+    flexDirection:   'row',
+    alignItems:      'center',
+    backgroundColor: '#fff',
+    paddingHorizontal: 16,
+    paddingVertical:   14,
+  },
+  backButton: {
+    width:           34,
+    height:          34,
+    borderRadius:    17,
+    backgroundColor: '#F0F1F6',
+    justifyContent:  'center',
+    alignItems:      'center',
+    marginRight:      12,
+  },
+  backIcon: {
+    fontSize:   22,
+    color:      '#1a1a2e',
+    marginTop: -2,
+  },
+  headerTitle: {
+    fontSize:   22,
+    fontWeight: '800',
+    color:      '#101014',
+  },
+  scrollArea: {
+    flex: 1,
   },
   subtitle: {
     fontSize: 16,
     textAlign: 'center',
+    marginTop: 16,
     marginBottom: 30,
     color: '#666',
     paddingHorizontal: 20,
@@ -299,7 +335,7 @@ const styles = StyleSheet.create({
   typeButton: {
     flex: 1,
     padding: 12,
-    borderRadius: 8,
+    borderRadius: 40,
     borderWidth: 2,
     borderColor: '#ddd',
     alignItems: 'center',
@@ -422,7 +458,7 @@ const styles = StyleSheet.create({
   submitButton: {
     backgroundColor: '#2196F3',
     padding: 15,
-    borderRadius: 8,
+    borderRadius: 40,
     alignItems: 'center',
   },
   submitButtonDisabled: {

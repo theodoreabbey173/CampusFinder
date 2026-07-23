@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useLayoutEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   View,
   Text,
@@ -7,13 +7,12 @@ import {
   StyleSheet,
   Image,
   ActivityIndicator,
-  Alert,
   TextInput,
   StatusBar,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { subscribeToItems, formatItemDate } from '../backend/itemsService';
 import { subscribeToUserChats } from '../backend/chatService';
-import { logoutUser } from '../backend/authService';
 import { auth } from '../firebaseConfig';
 
 const FILTERS = ['All', 'Lost', 'Found'];
@@ -30,68 +29,6 @@ export default function ListScreen({ navigation }) {
   const [searchQuery,  setSearchQuery]  = useState('');
   const [activeFilter, setActiveFilter] = useState('All');
   const [chatCount,    setChatCount]    = useState(0);
-
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      headerTitle: () => null,
-      headerLeft: () => (
-        <View style={styles.navLeft}>
-          <Image
-            source={require('../assets/leg.jpg')}
-            style={styles.navLogo}
-            resizeMode="contain"
-          />
-          <Text>
-            <Text style={styles.navCampus}>Campus</Text>
-            <Text style={styles.navFinder}>Finder</Text>
-          </Text>
-        </View>
-      ),
-      headerLeftContainerStyle: { paddingLeft: 16 },
-      headerRight: () => (
-        <TouchableOpacity
-          onPress={() => navigation.navigate('Inbox')}
-          style={styles.inboxBtn}
-        >
-          <Text style={styles.inboxIcon}>💬</Text>
-          {chatCount > 0 && (
-            <View style={styles.inboxBadge}>
-              <Text style={styles.inboxBadgeText}>
-                {chatCount > 9 ? '9+' : chatCount}
-              </Text>
-            </View>
-          )}
-        </TouchableOpacity>
-      ),
-      headerRightContainerStyle: { paddingRight: 16 },
-      headerStyle: {
-        backgroundColor: '#fff',
-        elevation: 3,
-        shadowColor: '#000',
-        shadowOpacity: 0.08,
-        shadowRadius: 4,
-        shadowOffset: { width: 0, height: 2 },
-      },
-    });
-  }, [navigation, chatCount]);
-
-  const handleLogout = () => {
-    Alert.alert('Log Out', 'Are you sure you want to log out?', [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Log Out',
-        style: 'destructive',
-        onPress: async () => {
-          try {
-            await logoutUser();
-            navigation.reset({ index: 0, routes: [{ name: 'SignUp' }] });
-          } catch (err) {
-            Alert.alert('Error', err?.message ?? 'Could not log out. Please try again.');
-          }
-        },
-      },
-    ]);
-  };
 
   useEffect(() => {
     const unsubscribe = subscribeToItems((fetchedItems) => {
@@ -130,8 +67,7 @@ export default function ListScreen({ navigation }) {
     });
   }, [items, activeFilter, searchQuery]);
 
-  const handleItemPress  = (item) => navigation.navigate('ItemDetails', { item });
-  const handleReportItem = ()     => navigation.navigate('ReportItem');
+  const handleItemPress = (item) => navigation.navigate('ItemDetails', { item });
 
   const renderItem = ({ item }) => {
     const isLost      = item.type === 'Lost';
@@ -197,13 +133,41 @@ export default function ListScreen({ navigation }) {
   }
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+
+      {/* ── Top bar ──────────────────────────────────────────────────────── */}
+      <View style={styles.topBar}>
+        <View style={styles.navLeft}>
+          <Image
+            source={require('../assets/icon.png')}
+            style={styles.navLogo}
+            resizeMode="contain"
+          />
+          <Text>
+            <Text style={styles.navCampus}>Campus</Text>
+            <Text style={styles.navFinder}>Finder</Text>
+          </Text>
+        </View>
+        <TouchableOpacity
+          onPress={() => navigation.navigate('Chats')}
+          style={styles.inboxBtn}
+        >
+          <Text style={styles.inboxIcon}>💬</Text>
+          {chatCount > 0 && (
+            <View style={styles.inboxBadge}>
+              <Text style={styles.inboxBadgeText}>
+                {chatCount > 9 ? '9+' : chatCount}
+              </Text>
+            </View>
+          )}
+        </TouchableOpacity>
+      </View>
 
       {/* ── Page title ───────────────────────────────────────────────────── */}
       <View style={styles.pageTitle}>
         <Text style={styles.pageTitleText}>Lost & Found</Text>
-        <Text style={styles.pageTitleSub}>Tap any item to see full details and chat.</Text>
+        <Text style={styles.pageTitleSub}>Tap any item to see details and chat.</Text>
       </View>
 
       {/* ── Stats banner ─────────────────────────────────────────────────── */}
@@ -261,7 +225,7 @@ export default function ListScreen({ navigation }) {
               onPress={() => setActiveFilter(f)}
             >
               <Text style={[styles.filterTabText, isActive && { color: '#fff' }]}>
-                {f} {count}
+                {f} · {count}
               </Text>
             </TouchableOpacity>
           );
@@ -297,19 +261,7 @@ export default function ListScreen({ navigation }) {
           />
         )}
       </View>
-
-      {/* ── Floating Report button ────────────────────────────────────────── */}
-      <TouchableOpacity style={styles.fab} onPress={handleReportItem} activeOpacity={0.88}>
-        <Text style={styles.fabText}>＋ Report</Text>
-      </TouchableOpacity>
-
-      {/* ── Footer logout ────────────────────────────────────────────────── */}
-      <View style={styles.footer}>
-        <TouchableOpacity style={styles.logoutFooterBtn} onPress={handleLogout}>
-          <Text style={styles.logoutFooterText}> Log Out </Text>
-        </TouchableOpacity>
-      </View>
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -361,24 +313,33 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
 
-  // ── Nav header ────────────────────────────────────────────────────
+  // ── Top bar ───────────────────────────────────────────────────────
+  topBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#fff',
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    paddingBottom: 12,
+  },
   navLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 3,
   },
   navLogo: {
-    height: 30,
-    width: 30,
+    height: 40,
+    width: 35,
     borderRadius: 6,
   },
   navCampus: {
-    fontSize: 17,
+    fontSize: 22,
     fontWeight: '800',
     color: '#1a237e',
   },
   navFinder: {
-    fontSize: 17,
+    fontSize: 22,
     fontWeight: '800',
     color: '#16a97a',
   },
@@ -388,7 +349,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#f0f4ff',
+    backgroundColor: '#fff',
     justifyContent: 'center',
     alignItems: 'center',
     position: 'relative',
@@ -421,7 +382,7 @@ const styles = StyleSheet.create({
 
   // ── Page title ────────────────────────────────────────────────────────────
   pageTitle: {
-    backgroundColor: '#fff',
+    backgroundColor: '#F4F7FB',
     paddingHorizontal: 20,
     paddingTop: 18,
     paddingBottom: 14,
@@ -443,7 +404,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     backgroundColor: '#fff',
     marginHorizontal: 16,
-    marginTop: 12,
+    marginTop: 1,
     borderRadius: 14,
     paddingVertical: 14,
     shadowColor: '#000',
@@ -534,7 +495,7 @@ const styles = StyleSheet.create({
   listContainer: {
     padding: 16,
     paddingTop: 10,
-    paddingBottom: 90,
+    paddingBottom: 20,
   },
 
   // ── Item card ─────────────────────────────────────────────────────────────
@@ -634,49 +595,5 @@ const styles = StyleSheet.create({
   itemReporter: {
     fontSize: 12,
     color: '#bbb',
-  },
-
-  // ── Floating Report button ─────────────────────────────────────────────────
-  fab: {
-    position: 'absolute',
-    bottom: 72,
-    right: 20,
-    backgroundColor: '#1a237e',
-    borderRadius: 28,
-    paddingHorizontal: 22,
-    paddingVertical: 14,
-    shadowColor: '#1a237e',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.4,
-    shadowRadius: 8,
-    elevation: 8,
-  },
-  fabText: {
-    color: '#fff',
-    fontWeight: '700',
-    fontSize: 15,
-    letterSpacing: 0.3,
-  },
-
-  // ── Footer logout ─────────────────────────────────────────────────────────
-  footer: {
-    backgroundColor: '#fff',
-    borderTopWidth: 1,
-    borderTopColor: '#eee',
-    paddingVertical: 14,
-    paddingHorizontal: 24,
-    alignItems: 'center',
-  },
-  logoutFooterBtn: {
-    paddingHorizontal: 36,
-    paddingVertical: 11,
-    borderRadius: 24,
-    borderWidth: 1.5,
-    borderColor: '#E53935',
-  },
-  logoutFooterText: {
-    color: '#E53935',
-    fontSize: 15,
-    fontWeight: '600',
   },
 });

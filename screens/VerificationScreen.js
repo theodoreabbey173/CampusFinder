@@ -54,57 +54,64 @@ export default function VerificationScreen({ navigation, route }) {
     }
   };
 
+  const busy = checking || resending;
+
   return (
     <View style={styles.container}>
-      <Text style={styles.icon}>{hasSent ? '📧' : '⚠️'}</Text>
-
-      <Text style={styles.title}>
-        {hasSent ? 'Check Your Email' : 'Email Not Sent'}
-      </Text>
-
-      {hasSent ? (
-        <>
-          <Text style={styles.subtitle}>We've sent a verification link to:</Text>
-          <Text style={styles.email}>{email}</Text>
-          <Text style={styles.instructions}>
-            Open the link in the email to verify your account, then tap the button below.{'\n\n'}
-            📁 <Text style={styles.bold}>Don't see it?</Text> Check your <Text style={styles.bold}>spam or junk folder</Text> — Firebase emails sometimes land there.
-          </Text>
-        </>
-      ) : (
-        <>
-          <Text style={styles.email}>{email}</Text>
-          <Text style={styles.instructions}>
-            The verification email couldn't be delivered automatically.{'\n\n'}
-            Tap <Text style={styles.bold}>"Send Verification Email"</Text> below to try again.
-          </Text>
-        </>
-      )}
-
-      {hasSent && (
+      {navigation.canGoBack() && (
         <TouchableOpacity
-          style={[styles.button, checking && styles.buttonDisabled]}
-          onPress={handleCheckVerified}
-          disabled={checking || resending}
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
+          disabled={busy}
         >
-          {checking
-            ? <ActivityIndicator color="#fff" />
-            : <Text style={styles.buttonText}>✅ I've Verified My Email</Text>
-          }
+          <Text style={styles.backIcon}>‹</Text>
         </TouchableOpacity>
       )}
 
-      <TouchableOpacity
-        style={[styles.resendButton, (!hasSent) && styles.resendButtonPrimary]}
-        onPress={handleResend}
-        disabled={checking || resending}
-      >
-        {resending
-          ? <ActivityIndicator color={hasSent ? '#2196F3' : '#fff'} size="small" />
-          : <Text style={[styles.resendText, (!hasSent) && styles.resendTextPrimary]}>
-              {hasSent ? 'Didn\'t receive it? Resend Email' : '📨 Send Verification Email'}
+      <View style={styles.content}>
+        <View style={styles.iconCircle}>
+          <Text style={styles.icon}>{hasSent ? '📬' : '⚠️'}</Text>
+        </View>
+
+        <Text style={styles.title}>
+          {hasSent ? 'Check your email' : 'Email not sent'}
+        </Text>
+
+        {hasSent ? (
+          <Text style={styles.subtitle}>
+            We sent a verification link to{'\n'}
+            <Text style={styles.emailBold}>{email}</Text>. Open it, then tap the button below.
+          </Text>
+        ) : (
+          <Text style={styles.subtitle}>
+            We couldn't deliver a verification link to{'\n'}
+            <Text style={styles.emailBold}>{email}</Text>. Tap below to try again.
+          </Text>
+        )}
+
+        <TouchableOpacity onPress={handleResend} disabled={busy} style={styles.resendRow}>
+          {resending ? (
+            <ActivityIndicator color="#7B86E0" size="small" />
+          ) : (
+            <Text style={styles.resendRowText}>
+              Didn't get it? <Text style={styles.resendLink}>Resend {hasSent ? 'email' : 'link'}</Text>
             </Text>
-        }
+          )}
+        </TouchableOpacity>
+      </View>
+
+      <TouchableOpacity
+        style={[styles.button, busy && styles.buttonDisabled]}
+        onPress={hasSent ? handleCheckVerified : handleResend}
+        disabled={busy}
+      >
+        {(hasSent ? checking : resending) ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <Text style={styles.buttonText}>
+            {hasSent ? 'Verify & continue' : 'Send verification email'}
+          </Text>
+        )}
       </TouchableOpacity>
     </View>
   );
@@ -113,83 +120,79 @@ export default function VerificationScreen({ navigation, route }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
-    backgroundColor: '#fff',
-    justifyContent: 'center',
+    backgroundColor: '#F6F7FB',
+    paddingTop: 50,
+    paddingHorizontal: 24,
+    paddingBottom: 30,
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#EDEEF5',
     alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 24,
+  },
+  backIcon: {
+    fontSize: 24,
+    color: '#333',
+    marginTop: -2,
+  },
+  content: {
+    flex: 1,
+  },
+  iconCircle: {
+    width: 64,
+    height: 64,
+    borderRadius: 20,
+    backgroundColor: '#EAECF9',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 20,
   },
   icon: {
-    fontSize: 72,
-    marginBottom: 20,
+    fontSize: 32,
   },
   title: {
-    fontSize: 28,
+    fontSize: 26,
     fontWeight: 'bold',
-    textAlign: 'center',
+    color: '#1A1B25',
     marginBottom: 10,
-    color: '#333',
   },
   subtitle: {
-    fontSize: 16,
-    textAlign: 'center',
-    color: '#666',
-    marginBottom: 6,
-  },
-  email: {
-    fontSize: 17,
-    fontWeight: 'bold',
-    color: '#2196F3',
-    marginBottom: 24,
-    textAlign: 'center',
-  },
-  instructions: {
     fontSize: 15,
-    textAlign: 'center',
-    color: '#555',
+    color: '#8A8F9A',
     lineHeight: 22,
-    marginBottom: 36,
-    paddingHorizontal: 10,
+    marginBottom: 28,
+  },
+  emailBold: {
+    fontWeight: 'bold',
+    color: '#333744',
+  },
+  resendRow: {
+    alignSelf: 'flex-start',
+  },
+  resendRowText: {
+    fontSize: 14,
+    color: '#8A8F9A',
+  },
+  resendLink: {
+    color: '#5B6AD0',
+    fontWeight: '700',
   },
   button: {
-    backgroundColor: '#2196F3',
-    padding: 15,
-    borderRadius: 8,
+    backgroundColor: '#8B93E8',
+    paddingVertical: 17,
+    borderRadius: 14,
     alignItems: 'center',
-    width: '100%',
-    marginBottom: 20,
   },
   buttonDisabled: {
     opacity: 0.6,
   },
   buttonText: {
     color: '#fff',
-    fontSize: 17,
-    fontWeight: 'bold',
-  },
-  bold: {
-    fontWeight: 'bold',
-    color: '#333',
-  },
-  resendButton: {
-    alignItems: 'center',
-    padding: 10,
-    marginTop: 4,
-  },
-  resendButtonPrimary: {
-    backgroundColor: '#2196F3',
-    borderRadius: 8,
-    paddingVertical: 14,
-    paddingHorizontal: 20,
-    width: '100%',
-    marginTop: 12,
-  },
-  resendText: {
-    color: '#2196F3',
     fontSize: 16,
-  },
-  resendTextPrimary: {
-    color: '#fff',
-    fontSize: 17,
     fontWeight: 'bold',
   },
 });

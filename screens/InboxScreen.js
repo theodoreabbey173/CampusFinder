@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useLayoutEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,8 +7,11 @@ import {
   StyleSheet,
   ActivityIndicator,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { auth } from '../firebaseConfig';
 import { subscribeToUserChats, formatMessageTime } from '../backend/chatService';
+
+const AVATAR_COLORS = ['#14B8A6', '#1B2A6B', '#6366F1', '#F59E0B', '#EF5350'];
 
 export default function InboxScreen({ navigation }) {
   const currentUser = auth.currentUser;
@@ -16,16 +19,6 @@ export default function InboxScreen({ navigation }) {
   const [chats,   setChats]   = useState([]);
   const [loading, setLoading] = useState(true);
   const [error,   setError]   = useState(null);
-
-  // ── Header ──────────────────────────────────────────────────────────────────
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      title:            'My Chats',
-      headerStyle:      { backgroundColor: '#1a1a2e' },
-      headerTitleStyle: { color: '#fff', fontWeight: '700' },
-      headerTintColor:  '#fff',
-    });
-  }, [navigation]);
 
   // ── Subscribe to user's chats ───────────────────────────────────────────────
   useEffect(() => {
@@ -49,11 +42,9 @@ export default function InboxScreen({ navigation }) {
 
   // ── Navigate to a chat ──────────────────────────────────────────────────────
   const openChat = (chat) => {
-    // Determine the other participant
     const otherUid  = chat.participants.find((uid) => uid !== currentUser.uid);
     const otherName = chat.participantNames?.[otherUid] ?? 'User';
 
-    // Reconstruct the minimal item object ChatScreen needs
     const item = {
       id:           chat.itemId,
       name:         chat.itemName,
@@ -63,7 +54,7 @@ export default function InboxScreen({ navigation }) {
 
     navigation.navigate('Chat', {
       item,
-      existingChatId: chat.id,   // ← skip createOrGetChat in ChatScreen
+      existingChatId: chat.id,
       otherUserId:    otherUid,
       otherUserName:  otherName,
     });
@@ -74,10 +65,7 @@ export default function InboxScreen({ navigation }) {
     const otherUid  = chat.participants?.find((uid) => uid !== currentUser.uid);
     const otherName = chat.participantNames?.[otherUid] ?? 'Unknown User';
     const initial   = (otherName?.[0] ?? '?').toUpperCase();
-
-    // Colour the avatar based on first letter
-    const avatarColors = ['#7C4DFF', '#2196F3', '#FF5722', '#4CAF50', '#FF9800'];
-    const avatarColor  = avatarColors[initial.charCodeAt(0) % avatarColors.length];
+    const avatarColor = AVATAR_COLORS[initial.charCodeAt(0) % AVATAR_COLORS.length];
 
     const timeLabel = chat.lastMessageTime
       ? formatMessageTime(chat.lastMessageTime)
@@ -85,95 +73,102 @@ export default function InboxScreen({ navigation }) {
 
     return (
       <TouchableOpacity
-        style={styles.chatRow}
+        style={styles.chatCard}
         onPress={() => openChat(chat)}
         activeOpacity={0.75}
       >
-        {/* Avatar */}
         <View style={[styles.avatar, { backgroundColor: avatarColor }]}>
           <Text style={styles.avatarText}>{initial}</Text>
         </View>
 
-        {/* Info */}
         <View style={styles.chatInfo}>
           <View style={styles.chatTopRow}>
             <Text style={styles.chatName} numberOfLines={1}>{otherName}</Text>
             <Text style={styles.chatTime}>{timeLabel}</Text>
           </View>
 
-          <Text style={styles.chatItemLabel} numberOfLines={1}>
-            📦 {chat.itemName}
-          </Text>
-
           <Text style={styles.chatPreview} numberOfLines={1}>
-            {chat.lastMessage ? `🔒 ${chat.lastMessage}` : 'No messages yet — say hello!'}
+            {chat.lastMessage ?? 'No messages yet — say hello!'}
           </Text>
         </View>
-
-        {/* Chevron */}
-        <Text style={styles.chevron}>›</Text>
       </TouchableOpacity>
     );
   };
 
+  // ── Header ───────────────────────────────────────────────────────────────────
+  const header = (
+    <View style={styles.header}>
+      <TouchableOpacity
+        style={styles.backButton}
+        onPress={() => navigation.canGoBack() && navigation.goBack()}
+        activeOpacity={0.7}
+      >
+        <Text style={styles.backIcon}>‹</Text>
+      </TouchableOpacity>
+      <Text style={styles.headerTitle}>Messages</Text>
+    </View>
+  );
+
   // ── Loading ─────────────────────────────────────────────────────────────────
   if (loading) {
     return (
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" color="#2196F3" />
-        <Text style={styles.loadingText}>Loading chats…</Text>
-      </View>
+      <SafeAreaView style={styles.container} edges={['top']}>
+        {header}
+        <View style={styles.centered}>
+          <ActivityIndicator size="large" color="#2196F3" />
+          <Text style={styles.loadingText}>Loading chats…</Text>
+        </View>
+      </SafeAreaView>
     );
   }
 
   // ── Error ───────────────────────────────────────────────────────────────────
   if (error) {
     return (
-      <View style={styles.centered}>
-        <Text style={styles.errorEmoji}>⚠️</Text>
-        <Text style={styles.errorText}>{error}</Text>
-      </View>
+      <SafeAreaView style={styles.container} edges={['top']}>
+        {header}
+        <View style={styles.centered}>
+          <Text style={styles.errorEmoji}>⚠️</Text>
+          <Text style={styles.errorText}>{error}</Text>
+        </View>
+      </SafeAreaView>
     );
   }
 
   // ── Empty state ─────────────────────────────────────────────────────────────
   if (chats.length === 0) {
     return (
-      <View style={styles.centered}>
-        <Text style={styles.emptyEmoji}>💬</Text>
-        <Text style={styles.emptyTitle}>No conversations yet</Text>
-        <Text style={styles.emptySub}>
-          When someone messages you about your item, it will appear here.
-        </Text>
-        <TouchableOpacity
-          style={styles.browseButton}
-          onPress={() => navigation.navigate('ItemList')}
-        >
-          <Text style={styles.browseButtonText}>Browse Items</Text>
-        </TouchableOpacity>
-      </View>
+      <SafeAreaView style={styles.container} edges={['top']}>
+        {header}
+        <View style={styles.centered}>
+          <Text style={styles.emptyEmoji}>💬</Text>
+          <Text style={styles.emptyTitle}>No conversations yet</Text>
+          <Text style={styles.emptySub}>
+            When someone messages you about your item, it will appear here.
+          </Text>
+          <TouchableOpacity
+            style={styles.browseButton}
+            onPress={() => navigation.navigate('Browse')}
+          >
+            <Text style={styles.browseButtonText}>Browse Items</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
     );
   }
 
   // ── Chat list ───────────────────────────────────────────────────────────────
   return (
-    <View style={styles.container}>
-      {/* Banner */}
-      <View style={styles.encryptionBanner}>
-        <Text style={styles.encryptionBannerText}>
-          🔒 All conversations are end-to-end encrypted
-        </Text>
-      </View>
-
+    <SafeAreaView style={styles.container} edges={['top']}>
+      {header}
       <FlatList
         data={chats}
         keyExtractor={(c) => c.id}
         renderItem={renderChat}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.listContainer}
-        ItemSeparatorComponent={() => <View style={styles.separator} />}
       />
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -182,59 +177,78 @@ export default function InboxScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex:            1,
-    backgroundColor: '#F4F7FB',
+    backgroundColor: '#fff',
   },
   centered: {
     flex:            1,
     justifyContent:  'center',
     alignItems:      'center',
     padding:          40,
-    backgroundColor: '#F4F7FB',
+    backgroundColor: '#ECF0F6',
   },
 
-  // Encryption banner
-  encryptionBanner: {
-    backgroundColor:    '#1a1a2e',
-    paddingVertical:     8,
-    paddingHorizontal:  16,
-  },
-  encryptionBannerText: {
-    color:     '#4CAF50',
-    fontSize:   12,
-    fontWeight: '600',
-    textAlign:  'center',
-  },
-
-  // List
-  listContainer: {
-    paddingTop:    8,
-    paddingBottom: 20,
-  },
-  separator: {
-    height:          1,
-    backgroundColor: '#EEF0F5',
-    marginLeft:       76,
-  },
-
-  // Chat row
-  chatRow: {
+  // Header
+  header: {
     flexDirection:   'row',
     alignItems:      'center',
     backgroundColor: '#fff',
     paddingHorizontal: 16,
     paddingVertical:   14,
   },
+  backButton: {
+    width:           34,
+    height:          34,
+    borderRadius:    17,
+    backgroundColor: '#F0F1F6',
+    justifyContent:  'center',
+    alignItems:      'center',
+    marginRight:      12,
+  },
+  backIcon: {
+    fontSize:   22,
+    color:      '#1a1a2e',
+    marginTop: -2,
+  },
+  headerTitle: {
+    fontSize:   22,
+    fontWeight: '800',
+    color:      '#101014',
+  },
+
+  // List
+  listContainer: {
+    paddingHorizontal: 16,
+    paddingTop:         12,
+    paddingBottom:      20,
+    backgroundColor:   '#ECF0F6',
+    flexGrow:           1,
+  },
+
+  // Chat card
+  chatCard: {
+    flexDirection:   'row',
+    alignItems:      'center',
+    backgroundColor: '#fff',
+    borderRadius:     18,
+    padding:          14,
+    marginBottom:     12,
+    shadowColor:      '#1a1a2e',
+    shadowOffset:     { width: 0, height: 2 },
+    shadowOpacity:    0.06,
+    shadowRadius:      8,
+    elevation:          2,
+  },
   avatar: {
-    width:          48,
-    height:         48,
-    borderRadius:   24,
+    width:          46,
+    height:         46,
+    borderRadius:   23,
     justifyContent: 'center',
     alignItems:     'center',
     marginRight:     12,
   },
   avatarText: {
     color:      '#fff',
-    fontSize:    20,
+    fontSize:    18,
     fontWeight: '700',
   },
   chatInfo: {
@@ -244,33 +258,22 @@ const styles = StyleSheet.create({
     flexDirection:  'row',
     justifyContent: 'space-between',
     alignItems:     'center',
-    marginBottom:    2,
+    marginBottom:    4,
   },
   chatName: {
-    fontSize:    16,
+    fontSize:    15,
     fontWeight:  '700',
-    color:       '#1a1a2e',
+    color:       '#101014',
     flex:         1,
     marginRight:  8,
   },
   chatTime: {
     fontSize: 12,
-    color:    '#aaa',
-  },
-  chatItemLabel: {
-    fontSize:     12,
-    color:        '#2196F3',
-    fontWeight:   '600',
-    marginBottom:  3,
+    color:    '#9aa0b4',
   },
   chatPreview: {
     fontSize: 13,
-    color:    '#888',
-  },
-  chevron: {
-    fontSize:   22,
-    color:      '#ccc',
-    marginLeft:  8,
+    color:    '#8a8f9c',
   },
 
   // Loading / empty / error

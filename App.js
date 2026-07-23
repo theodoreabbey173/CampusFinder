@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { onIdTokenChanged } from 'firebase/auth';
@@ -10,12 +11,11 @@ import SignUpScreen       from './screens/SignUpScreen';
 import LoginScreen        from './screens/LoginScreen';
 import VerificationScreen from './screens/VerificationScreen';
 import WelcomeScreen      from './screens/WelcomeScreen';
-import ListScreen         from './screens/ListScreen';
+import MainTabs           from './screens/MainTabs';
 import DetailsScreen      from './screens/DetailsScreen';
 import ReportItemScreen   from './screens/ReportItemScreen';
 import ChatScreen         from './screens/ChatScreen';
 import ConfirmationScreen from './screens/ConfirmationScreen';
-import InboxScreen        from './screens/InboxScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -57,65 +57,62 @@ export default function App() {
   };
 
   return (
-    <NavigationContainer>
-      <Stack.Navigator initialRouteName={getInitialRoute()}>
+    <SafeAreaProvider>
+      <NavigationContainer>
+        <Stack.Navigator initialRouteName={getInitialRoute()}>
 
-        {/* ── Auth screens ──────────────────────────────────────────────────── */}
-        <Stack.Screen
-          name="SignUp"
-          component={SignUpScreen}
-          options={{ title: 'Create Account' }}
-        />
-        <Stack.Screen
-          name="Login"
-          component={LoginScreen}
-          options={{ title: 'Sign In' }}
-        />
-        <Stack.Screen
-          name="Verification"
-          component={VerificationScreen}
-          options={{ title: 'Verify Email', headerBackVisible: false }}
-        />
+          {/* ── Auth screens ──────────────────────────────────────────────── */}
+          <Stack.Screen
+            name="SignUp"
+            component={SignUpScreen}
+            options={{ title: 'Create Account' }}
+          />
+          <Stack.Screen
+            name="Login"
+            component={LoginScreen}
+            options={{ title: 'Sign In' }}
+          />
+          <Stack.Screen
+            name="Verification"
+            component={VerificationScreen}
+            options={{ title: 'Verify Email', headerBackVisible: false }}
+          />
 
-        {/* ── Main app screens ──────────────────────────────────────────────── */}
-        <Stack.Screen
-          name="Welcome"
-          component={WelcomeScreen}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="ItemList"
-          component={ListScreen}
-          options={{ title: 'Lost & Found', headerBackVisible: false }}
-        />
-        <Stack.Screen
-          name="ItemDetails"
-          component={DetailsScreen}
-          options={{ title: 'Item Details' }}
-        />
-        <Stack.Screen
-          name="ReportItem"
-          component={ReportItemScreen}
-          options={{ title: 'Report an Item' }}
-        />
-        <Stack.Screen
-          name="Chat"
-          component={ChatScreen}
-          options={{ title: 'Chat' }}
-        />
-        <Stack.Screen
-          name="Inbox"
-          component={InboxScreen}
-          options={{ title: 'My Chats' }}
-        />
-        <Stack.Screen
-          name="ReportConfirmation"
-          component={ConfirmationScreen}
-          options={{ title: 'Done', headerBackVisible: false }}
-        />
+          {/* ── Main app screens ─────────────────────────────────────────── */}
+          <Stack.Screen
+            name="Welcome"
+            component={WelcomeScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="ItemList"
+            component={MainTabs}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="ItemDetails"
+            component={DetailsScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="ReportItem"
+            component={ReportItemScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="Chat"
+            component={ChatScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="ReportConfirmation"
+            component={ConfirmationScreen}
+            options={{ title: 'Done', headerBackVisible: false }}
+          />
 
-      </Stack.Navigator>
-    </NavigationContainer>
+        </Stack.Navigator>
+      </NavigationContainer>
+    </SafeAreaProvider>
   );
 }
 

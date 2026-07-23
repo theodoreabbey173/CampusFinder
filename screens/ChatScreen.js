@@ -13,6 +13,7 @@ import {
   Animated,
   AppState,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { auth } from '../firebaseConfig';
 import {
   createOrGetChat,
@@ -97,6 +98,14 @@ const MessageToast = ({ senderName, messageText, visible }) => {
 export default function ChatScreen({ navigation, route }) {
   const { item }      = route.params;
   const currentUser   = auth.currentUser;
+
+  const otherPersonName = route.params?.otherUserName ?? item.reporterName ?? 'User';
+  const otherInitials   = otherPersonName
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((w) => w[0]?.toUpperCase())
+    .join('') || '?';
 
   const [chatId,     setChatId]     = useState(null);
   const [messages,   setMessages]   = useState([]);
@@ -283,35 +292,26 @@ export default function ChatScreen({ navigation, route }) {
 
   // ── Render a single message bubble ─────────────────────────────────────────
 
-  const renderMessage = (msg) => {
-    const isMe        = msg.senderId === currentUser?.uid;
-    const bubbleStyle = isMe ? styles.myMessage : styles.theirMessage;
+  const renderMessage = (msg, groupedWithNext) => {
+    const isMe = msg.senderId === currentUser?.uid;
 
     return (
-      <View key={msg.id} style={[styles.messageWrapper, isMe ? styles.wrapperRight : styles.wrapperLeft]}>
-        {!isMe && (
-          <View style={styles.avatarCircle}>
-            <Text style={styles.avatarText}>
-              {(msg.senderName?.[0] ?? '?').toUpperCase()}
-            </Text>
-          </View>
-        )}
-
-        <View style={[styles.messageBubble, bubbleStyle]}>
-          {!isMe && (
-            <Text style={styles.senderName}>{msg.senderName}</Text>
-          )}
+      <View
+        key={msg.id}
+        style={[
+          styles.messageWrapper,
+          isMe ? styles.wrapperRight : styles.wrapperLeft,
+          groupedWithNext && styles.messageWrapperGrouped,
+        ]}
+      >
+        <View style={[styles.messageBubble, isMe ? styles.myMessage : styles.theirMessage]}>
           <Text style={[styles.messageText, isMe ? styles.myText : styles.theirText]}>
             {msg.text}
           </Text>
-          <View style={styles.messageFooter}>
-            <Text style={[styles.timestamp, isMe ? styles.tsRight : styles.tsLeft]}>
-              {formatMessageTime(msg.timestamp)}
-            </Text>
-            {/* Encrypted indicator per bubble */}
-            <Text style={styles.lockIcon}>🔒</Text>
-          </View>
         </View>
+        <Text style={[styles.timestamp, isMe ? styles.tsRight : styles.tsLeft]}>
+          {formatMessageTime(msg.timestamp)}
+        </Text>
       </View>
     );
   };
@@ -320,7 +320,7 @@ export default function ChatScreen({ navigation, route }) {
 
   if (initError) {
     return (
-      <View style={styles.centered}>
+      <SafeAreaView style={styles.centered} edges={['top']}>
         <Text style={styles.errorEmoji}>⚠️</Text>
         <Text style={styles.errorTitle}>Chat unavailable</Text>
         <Text style={styles.errorMessage}>{initError}</Text>
@@ -340,7 +340,7 @@ export default function ChatScreen({ navigation, route }) {
         <TouchableOpacity style={styles.goBackLink} onPress={() => navigation.goBack()}>
           <Text style={styles.goBackLinkText}>← Go back</Text>
         </TouchableOpacity>
-      </View>
+      </SafeAreaView>
     );
   }
 
@@ -348,16 +348,17 @@ export default function ChatScreen({ navigation, route }) {
 
   if (loading) {
     return (
-      <View style={styles.centered}>
+      <SafeAreaView style={styles.centered} edges={['top']}>
         <ActivityIndicator size="large" color="#2196F3" />
         <Text style={styles.loadingText}>Opening secure chat…</Text>
-      </View>
+      </SafeAreaView>
     );
   }
 
   // ── Main render ─────────────────────────────────────────────────────────────
 
   return (
+    <SafeAreaView style={styles.container} edges={['top']}>
     <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -372,22 +373,28 @@ export default function ChatScreen({ navigation, route }) {
 
       {/* ── Header ───────────────────────────────────────────────────────── */}
       <View style={styles.header}>
-        <View style={styles.headerLeft}>
-          <Text style={styles.headerTitle} numberOfLines={1}>💬 {item.name}</Text>
-          <View style={styles.encryptionBadge}>
-            <Text style={styles.encryptionIcon}>🔒</Text>
-            <Text style={styles.encryptionText}>End-to-end encrypted</Text>
-          </View>
+        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+          <Text style={styles.backButtonText}>‹</Text>
+        </TouchableOpacity>
+
+        <View style={styles.headerAvatar}>
+          <Text style={styles.headerAvatarText}>{otherInitials}</Text>
         </View>
-        <View style={styles.headerRight}>
-          <View style={styles.onlineDot} />
+
+        <View style={styles.headerInfo}>
+          <Text style={styles.headerName} numberOfLines={1}>{otherPersonName}</Text>
+          <View style={styles.headerStatusRow}>
+            <View style={styles.statusDot} />
+            <Text style={styles.headerStatusText} numberOfLines={1}>Found your {item.name}</Text>
+          </View>
         </View>
       </View>
 
       {/* ── Encryption notice (one-time banner) ──────────────────────────── */}
       <View style={styles.encryptionBanner}>
+        <Text style={styles.encryptionBannerIcon}>🔒</Text>
         <Text style={styles.encryptionBannerText}>
-          🔐 Messages are encrypted and only visible to you and the other person.
+          Messages are private & encrypted end-to-end
         </Text>
       </View>
 
@@ -405,7 +412,9 @@ export default function ChatScreen({ navigation, route }) {
             <Text style={styles.emptyChatSub}>Say hello and ask about the item!</Text>
           </View>
         ) : (
-          messages.map(renderMessage)
+          messages.map((msg, index) =>
+            renderMessage(msg, messages[index + 1]?.senderId === msg.senderId),
+          )
         )}
         <View style={{ height: 10 }} />
       </ScrollView>
@@ -415,8 +424,8 @@ export default function ChatScreen({ navigation, route }) {
         <View style={styles.inputWrapper}>
           <TextInput
             style={styles.textInput}
-            placeholder="Type a secure message…"
-            placeholderTextColor="#aaa"
+            placeholder="Message..."
+            placeholderTextColor="#9AA5B1"
             value={message}
             onChangeText={setMessage}
             multiline
@@ -424,7 +433,6 @@ export default function ChatScreen({ navigation, route }) {
             editable={!sending}
             onSubmitEditing={handleSend}
           />
-          <Text style={styles.inputLock}>🔒</Text>
         </View>
         <TouchableOpacity
           style={[
@@ -443,9 +451,10 @@ export default function ChatScreen({ navigation, route }) {
 
       {/* ── End chat ─────────────────────────────────────────────────────── */}
       <TouchableOpacity style={styles.endChatButton} onPress={handleEndChat}>
-        <Text style={styles.endChatButtonText}>✅  End Chat &amp; Report</Text>
+        <Text style={styles.endChatButtonText}>End Chat &amp; Report✅</Text>
       </TouchableOpacity>
     </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
@@ -454,13 +463,13 @@ export default function ChatScreen({ navigation, route }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ECF0F6',
+    backgroundColor: '#EEF1F6',
   },
   centered: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#ECF0F6',
+    backgroundColor: '#EEF1F6',
   },
   loadingText: {
     marginTop: 12,
@@ -550,52 +559,83 @@ const styles = StyleSheet.create({
 
   // ── Header ─────────────────────────────────────────────────────────────────
   header: {
-    backgroundColor:  '#1a1a2e',
-    paddingHorizontal: 16,
-    paddingVertical:   14,
+    backgroundColor:  '#FFFFFF',
+    paddingHorizontal: 12,
+    paddingVertical:   10,
     flexDirection:    'row',
-    justifyContent:   'space-between',
     alignItems:       'center',
+    borderBottomWidth: 1,
+    borderBottomColor: '#EAEDF2',
   },
-  headerLeft:  { flex: 1 },
-  headerTitle: {
-    fontSize:    18,
-    fontWeight:  '700',
-    color:       '#fff',
-    letterSpacing: 0.2,
+  backButton: {
+    width:          32,
+    height:         32,
+    justifyContent: 'center',
+    alignItems:     'center',
+    marginRight:    4,
   },
-  encryptionBadge: {
+  backButtonText: {
+    fontSize:   30,
+    color:      '#333',
+    lineHeight: 30,
+    marginTop:  -4,
+  },
+  headerAvatar: {
+    width:           40,
+    height:          40,
+    borderRadius:    20,
+    backgroundColor: '#2AACA0',
+    justifyContent:  'center',
+    alignItems:      'center',
+    marginRight:     10,
+  },
+  headerAvatarText: {
+    color:      '#fff',
+    fontWeight: '700',
+    fontSize:   15,
+  },
+  headerInfo: { flex: 1 },
+  headerName: {
+    fontSize:   16,
+    fontWeight: '700',
+    color:      '#1A1A2E',
+  },
+  headerStatusRow: {
     flexDirection: 'row',
     alignItems:    'center',
-    marginTop:     4,
+    marginTop:     2,
   },
-  encryptionIcon: { fontSize: 11, marginRight: 4 },
-  encryptionText: {
-    fontSize:  12,
-    color:     '#4CAF50',
-    fontWeight: '600',
+  statusDot: {
+    width:           7,
+    height:          7,
+    borderRadius:    3.5,
+    backgroundColor: '#22C55E',
+    marginRight:      5,
   },
-  headerRight:  { marginLeft: 12 },
-  onlineDot: {
-    width:           10,
-    height:          10,
-    borderRadius:    5,
-    backgroundColor: '#4CAF50',
+  headerStatusText: {
+    fontSize: 12,
+    color:    '#6B7280',
+    flexShrink: 1,
   },
 
   // ── Encryption banner ───────────────────────────────────────────────────────
   encryptionBanner: {
-    backgroundColor: '#E8F5E9',
+    backgroundColor:  '#12121F',
     paddingHorizontal: 14,
-    paddingVertical:   8,
-    borderBottomWidth: 1,
-    borderBottomColor: '#C8E6C9',
+    paddingVertical:   9,
+    flexDirection:    'row',
+    justifyContent:   'center',
+    alignItems:       'center',
+  },
+  encryptionBannerIcon: {
+    fontSize:   12,
+    marginRight: 6,
   },
   encryptionBannerText: {
     fontSize:  12,
-    color:     '#2E7D32',
+    color:     '#22C55E',
     textAlign: 'center',
-    fontWeight: '500',
+    fontWeight: '600',
   },
 
   // ── Messages ────────────────────────────────────────────────────────────────
@@ -625,74 +665,46 @@ const styles = StyleSheet.create({
 
   // Message layout
   messageWrapper: {
-    flexDirection: 'row',
-    marginBottom:  10,
-    alignItems:    'flex-end',
+    marginBottom: 14,
+    maxWidth:     '80%',
   },
-  wrapperRight: { justifyContent: 'flex-end' },
-  wrapperLeft:  { justifyContent: 'flex-start' },
-
-  // Avatar for incoming messages
-  avatarCircle: {
-    width:           32,
-    height:          32,
-    borderRadius:    16,
-    backgroundColor: '#7C4DFF',
-    justifyContent:  'center',
-    alignItems:      'center',
-    marginRight:     6,
-    marginBottom:    2,
-  },
-  avatarText: {
-    color:      '#fff',
-    fontWeight: '700',
-    fontSize:   14,
-  },
+  messageWrapperGrouped: { marginBottom: 4 },
+  wrapperRight: { alignSelf: 'flex-end',  alignItems: 'flex-end' },
+  wrapperLeft:  { alignSelf: 'flex-start', alignItems: 'flex-start' },
 
   // Bubble
   messageBubble: {
-    maxWidth:     '75%',
     borderRadius: 18,
-    padding:       12,
-    paddingBottom:  8,
+    paddingHorizontal: 14,
+    paddingVertical:   10,
   },
   myMessage: {
-    backgroundColor:    '#2196F3',
+    backgroundColor:         '#2563EB',
     borderBottomRightRadius: 4,
   },
   theirMessage: {
-    backgroundColor:   '#fff',
+    backgroundColor:        '#fff',
     borderBottomLeftRadius: 4,
-    shadowColor:        '#000',
-    shadowOffset:       { width: 0, height: 1 },
-    shadowOpacity:      0.08,
-    shadowRadius:       4,
-    elevation:          2,
-  },
-  senderName: {
-    fontSize:    12,
-    fontWeight:  '700',
-    color:       '#7C4DFF',
-    marginBottom: 3,
+    shadowColor:            '#000',
+    shadowOffset:           { width: 0, height: 1 },
+    shadowOpacity:          0.06,
+    shadowRadius:           3,
+    elevation:              1,
   },
   messageText: {
     fontSize:   15,
     lineHeight: 21,
   },
   myText:    { color: '#fff' },
-  theirText: { color: '#222' },
+  theirText: { color: '#1F2937' },
 
-  messageFooter: {
-    flexDirection:  'row',
-    alignItems:     'center',
-    justifyContent: 'flex-end',
-    marginTop:       4,
-    gap:             4,
+  timestamp: {
+    fontSize:  11,
+    color:     '#9AA5B1',
+    marginTop: 4,
   },
-  timestamp: { fontSize: 11 },
-  tsRight:   { color: 'rgba(255,255,255,0.65)' },
-  tsLeft:    { color: '#bbb' },
-  lockIcon:  { fontSize: 10 },
+  tsRight: { textAlign: 'right' },
+  tsLeft:  { textAlign: 'left' },
 
   // ── Input bar ───────────────────────────────────────────────────────────────
   inputContainer: {
@@ -700,21 +712,19 @@ const styles = StyleSheet.create({
     padding:          12,
     paddingTop:        8,
     borderTopWidth:    1,
-    borderTopColor:   '#dde4ef',
+    borderTopColor:   '#EAEDF2',
     backgroundColor:  '#fff',
-    alignItems:       'flex-end',
+    alignItems:       'center',
   },
   inputWrapper: {
     flex:             1,
     flexDirection:    'row',
     alignItems:       'center',
-    borderWidth:       1,
-    borderColor:      '#dde4ef',
     borderRadius:     24,
-    paddingHorizontal: 14,
-    paddingVertical:    6,
+    paddingHorizontal: 16,
+    paddingVertical:    8,
     marginRight:       8,
-    backgroundColor:  '#F4F7FB',
+    backgroundColor:  '#F0F2F6',
   },
   textInput: {
     flex:      1,
@@ -723,23 +733,13 @@ const styles = StyleSheet.create({
     maxHeight: 100,
     paddingVertical: 4,
   },
-  inputLock: {
-    fontSize:   14,
-    marginLeft:  6,
-    opacity:    0.5,
-  },
   sendButton: {
-    width:           44,
-    height:          44,
-    borderRadius:    22,
-    backgroundColor: '#2196F3',
+    width:           42,
+    height:          42,
+    borderRadius:    21,
+    backgroundColor: '#2563EB',
     justifyContent:  'center',
     alignItems:      'center',
-    shadowColor:     '#2196F3',
-    shadowOffset:    { width: 0, height: 3 },
-    shadowOpacity:   0.4,
-    shadowRadius:    6,
-    elevation:       5,
   },
   sendButtonDisabled: { opacity: 0.35 },
   sendButtonText: {
