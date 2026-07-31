@@ -18,6 +18,7 @@ A mobile application designed to help students at University of Ghana Legon repo
 ![Expo](https://img.shields.io/badge/expo-1C1E24?style=for-the-badge&logo=expo&logoColor=#D04A37)
 ![JavaScript](https://img.shields.io/badge/javascript-%23323330.svg?style=for-the-badge&logo=javascript&logoColor=%23F7DF1E)
 ![Firebase](https://img.shields.io/badge/firebase-ffca28?style=for-the-badge&logo=firebase&logoColor=black)
+![Lucide](https://img.shields.io/badge/lucide--react--native-F56565?style=for-the-badge&logo=lucide&logoColor=white)
 
 ## 📋 About The Project
 
@@ -26,13 +27,15 @@ CampusFinder is a comprehensive lost and found solution specifically designed fo
 ### Key Features
 
 - **Item Reporting System**: Easy-to-use forms for reporting both lost and found items with image upload
-- **Visual Item Browse**: Browse items with images and detailed descriptions
+- **Visual Item Browse**: Browse items with images, live Lost/Found stats, search, and filters
 - **Secure Communication**: Encrypted chat system for user safety
 - **User Authentication**: Firebase-backed sign-up, login, and email verification
 - **Inbox / Chat Management**: Centralised inbox to view and manage all active conversations
+- **Account / Profile Tab**: View profile info, reported items count, and account settings
 - **Location-Based Tracking**: Items are categorised by campus locations
 - **Push Notifications**: Stay updated on new items and messages
 - **Real-time Updates**: Firebase-powered live data syncing
+- **Icon-Based UI**: Consistent `lucide-react-native` iconography throughout — no emoji in the app UI
 
 ## 🏗️ App Architecture
 
@@ -49,15 +52,19 @@ The application follows three main user flows:
 > - Signed in but email unverified → Verification screen
 > - Signed in & verified → Full app
 
-### 2. Lost & Found Reporting Flow
-- **List Screen**: Display all reported items with images and filters
+### 2. Main App (Bottom Tabs)
+`MainTabs.js` hosts three tabs, each backed by a dedicated screen:
+- **Browse** (`ListScreen`): Live Lost/Found stats, search, filter pills, and a floating **+ Report** button
+- **Chats** (`InboxScreen`): Overview of all active chat conversations
+- **You** (`ProfileScreen`): Account info, reported items, and settings
+
+### 3. Lost & Found Reporting Flow
 - **Details Screen**: Comprehensive item information and contact options
 - **Report Item Screen**: Form to report new lost or found items with image picker
-
-### 3. Secure Communication Flow
-- **Inbox Screen**: Overview of all active chat conversations
-- **Chat Screen**: Encrypted real-time messaging between users
 - **Confirmation Screen**: Report submission success confirmation with safety tips
+
+### 4. Secure Communication Flow
+- **Chat Screen**: Encrypted real-time messaging between users, launched from Browse or Chats
 
 ## 🛠️ Tools & Technologies Used
 
@@ -71,7 +78,8 @@ The application follows three main user flows:
 
 ### Navigation
 - **@react-navigation/native**: Primary navigation library
-- **@react-navigation/native-stack**: Stack-based navigation system
+- **@react-navigation/native-stack**: Stack-based navigation for auth and detail screens
+- **@react-navigation/bottom-tabs**: Bottom tab navigation for the main app (Browse / Chats / You)
 
 ### Storage & Security
 - **AsyncStorage**: Local persistent storage (`@react-native-async-storage/async-storage`)
@@ -84,6 +92,7 @@ The application follows three main user flows:
 
 ### Design & UI
 - **Custom UI Components**: Handcrafted components for optimal user experience
+- **lucide-react-native**: Consistent icon set used across every screen (no emoji in the UI)
 - **Responsive Design**: Adaptive layouts for different screen sizes
 - **expo-image-picker**: Native image selection for item reports
 
@@ -160,17 +169,27 @@ CampusFinder/
 ├── firebaseConfig.js               # Firebase project configuration
 ├── index.js                        # App entry point
 ├── assets/                         # App icons, splash screen, and images
+├── backend/
+│   ├── authService.js              # Sign up / login / verification helpers
+│   ├── chatService.js              # Chat creation, messaging, subscriptions
+│   ├── itemsService.js             # Lost & found item CRUD + subscriptions
+│   ├── notificationService.js      # Push notification registration & badges
+│   └── storageService.js           # Firebase Storage image uploads
+├── components/
+│   └── LucideIconExample.js        # Reference usage of lucide-react-native icons
 ├── screens/
 │   ├── screenshots/                # App screenshots
 │   ├── SignUpScreen.js             # User registration
 │   ├── LoginScreen.js              # User sign-in
 │   ├── VerificationScreen.js       # Email verification
 │   ├── WelcomeScreen.js            # App welcome & onboarding
-│   ├── ListScreen.js               # Browse all items
+│   ├── MainTabs.js                 # Bottom tab navigator (Browse / Chats / You)
+│   ├── ListScreen.js               # Browse tab — item list, search, filters, + Report
 │   ├── DetailsScreen.js            # Individual item details
 │   ├── ReportItemScreen.js         # Report new items (with image picker)
-│   ├── InboxScreen.js              # All active chat conversations
+│   ├── InboxScreen.js              # Chats tab — all active chat conversations
 │   ├── ChatScreen.js               # Secure real-time messaging
+│   ├── ProfileScreen.js            # You tab — account info & settings
 │   └── ConfirmationScreen.js       # Report submission success
 ├── package.json
 └── README.md

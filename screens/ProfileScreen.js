@@ -81,7 +81,7 @@ export default function ProfileScreen() {
               <Text style={styles.avatarText}>{initials}</Text>
             </View>
             <TouchableOpacity style={styles.avatarEditBadge} onPress={() => comingSoon('Edit photo')}>
-              <Pencil size={11} color="#fff" strokeWidth={2.4} />
+              <Pencil size={11} color="#101010" strokeWidth={2.4} />
             </TouchableOpacity>
           </View>
           <View style={styles.profileInfo}>
