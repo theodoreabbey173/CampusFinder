@@ -49,66 +49,69 @@ export default function App() {
    *   • Not signed in               → Auth screens (SignUp / Login)
    *   • Signed in but unverified    → Verification screen only
    *   • Signed in & email verified  → Full app
+   *
+   * Screens are conditionally rendered (rather than relying on
+   * initialRouteName, which is only read once on mount) so that the
+   * navigator resets automatically when `user` changes — e.g. on logout.
    */
-  const getInitialRoute = () => {
-    if (!user)                return 'SignUp';
-    if (!user.emailVerified)  return 'Verification';
-    return 'Welcome';
-  };
-
   return (
     <SafeAreaProvider>
       <NavigationContainer>
-        <Stack.Navigator initialRouteName={getInitialRoute()}>
+        <Stack.Navigator>
 
-          {/* ── Auth screens ──────────────────────────────────────────────── */}
-          <Stack.Screen
-            name="SignUp"
-            component={SignUpScreen}
-            options={{ title: 'Create Account' }}
-          />
-          <Stack.Screen
-            name="Login"
-            component={LoginScreen}
-            options={{ title: 'Sign In' }}
-          />
-          <Stack.Screen
-            name="Verification"
-            component={VerificationScreen}
-            options={{ title: 'Verify Email', headerBackVisible: false }}
-          />
-
-          {/* ── Main app screens ─────────────────────────────────────────── */}
-          <Stack.Screen
-            name="Welcome"
-            component={WelcomeScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name="ItemList"
-            component={MainTabs}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name="ItemDetails"
-            component={DetailsScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name="ReportItem"
-            component={ReportItemScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name="Chat"
-            component={ChatScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name="ReportConfirmation"
-            component={ConfirmationScreen}
-            options={{ title: 'Done', headerBackVisible: false }}
-          />
+          {!user ? (
+            <>
+              <Stack.Screen
+                name="SignUp"
+                component={SignUpScreen}
+                options={{ title: 'Create Account' }}
+              />
+              <Stack.Screen
+                name="Login"
+                component={LoginScreen}
+                options={{ title: 'Sign In' }}
+              />
+            </>
+          ) : !user.emailVerified ? (
+            <Stack.Screen
+              name="Verification"
+              component={VerificationScreen}
+              options={{ title: 'Verify Email', headerBackVisible: false }}
+            />
+          ) : (
+            <>
+              <Stack.Screen
+                name="Welcome"
+                component={WelcomeScreen}
+                options={{ headerShown: false }}
+              />
+              <Stack.Screen
+                name="ItemList"
+                component={MainTabs}
+                options={{ headerShown: false }}
+              />
+              <Stack.Screen
+                name="ItemDetails"
+                component={DetailsScreen}
+                options={{ headerShown: false }}
+              />
+              <Stack.Screen
+                name="ReportItem"
+                component={ReportItemScreen}
+                options={{ headerShown: false }}
+              />
+              <Stack.Screen
+                name="Chat"
+                component={ChatScreen}
+                options={{ headerShown: false }}
+              />
+              <Stack.Screen
+                name="ReportConfirmation"
+                component={ConfirmationScreen}
+                options={{ title: 'Done', headerBackVisible: false }}
+              />
+            </>
+          )}
 
         </Stack.Navigator>
       </NavigationContainer>
