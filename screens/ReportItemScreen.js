@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
+import { ChevronLeft, Camera, Image as ImageIcon, X, FileText } from 'lucide-react-native';
 import { auth } from '../firebaseConfig';
 import { createItem } from '../backend/itemsService';
 import { uploadImage } from '../backend/storageService';
@@ -106,7 +107,7 @@ export default function ReportItemScreen({ navigation }) {
       });
 
       Alert.alert(
-        'Report Submitted! ✅',
+        'Report Submitted!',
         `Your ${reportType.toLowerCase()} item report has been saved.`,
         [{ text: 'OK', onPress: () => navigation.navigate('ItemList') }],
       );
@@ -128,7 +129,7 @@ export default function ReportItemScreen({ navigation }) {
           onPress={() => navigation.canGoBack() && navigation.goBack()}
           activeOpacity={0.7}
         >
-          <Text style={styles.backIcon}>‹</Text>
+          <ChevronLeft size={22} color="#1a1a2e" strokeWidth={2.4} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Report an Item</Text>
       </View>
@@ -198,7 +199,7 @@ export default function ReportItemScreen({ navigation }) {
               onPress={takePhoto}
               disabled={submitting}
             >
-              <Text style={styles.imageOptionIcon}>📷</Text>
+              <Camera size={28} color="#FF9800" strokeWidth={2} style={styles.imageOptionIcon} />
               <Text style={styles.imageOptionTitle}>Take Photo</Text>
               <Text style={styles.imageOptionSub}>Use camera</Text>
             </TouchableOpacity>
@@ -209,7 +210,7 @@ export default function ReportItemScreen({ navigation }) {
               onPress={pickImage}
               disabled={submitting}
             >
-              <Text style={styles.imageOptionIcon}>🖼️</Text>
+              <ImageIcon size={28} color="#2196F3" strokeWidth={2} style={styles.imageOptionIcon} />
               <Text style={styles.imageOptionTitle}>Choose Photo</Text>
               <Text style={styles.imageOptionSub}>From gallery</Text>
             </TouchableOpacity>
@@ -224,21 +225,24 @@ export default function ReportItemScreen({ navigation }) {
                 onPress={takePhoto}
                 disabled={submitting}
               >
-                <Text style={styles.imageActionText}>📷 Retake</Text>
+                <Camera size={13} color="#fff" strokeWidth={2.4} />
+                <Text style={styles.imageActionText}>Retake</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.imageActionBtn, { backgroundColor: 'rgba(0,0,0,0.55)' }]}
                 onPress={pickImage}
                 disabled={submitting}
               >
-                <Text style={styles.imageActionText}>🖼️ Change</Text>
+                <ImageIcon size={13} color="#fff" strokeWidth={2.4} />
+                <Text style={styles.imageActionText}>Change</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.imageActionBtn, { backgroundColor: 'rgba(229,57,53,0.85)' }]}
                 onPress={() => setImageUri(null)}
                 disabled={submitting}
               >
-                <Text style={styles.imageActionText}>✕ Remove</Text>
+                <X size={13} color="#fff" strokeWidth={2.6} />
+                <Text style={styles.imageActionText}>Remove</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -246,7 +250,10 @@ export default function ReportItemScreen({ navigation }) {
 
         {/* Notes */}
         <View style={styles.noteSection}>
-          <Text style={styles.noteTitle}>📝 Important Notes:</Text>
+          <View style={styles.noteTitleRow}>
+            <FileText size={16} color="#333" strokeWidth={2.2} />
+            <Text style={styles.noteTitle}>Important Notes:</Text>
+          </View>
           <Text style={styles.noteText}>• Be as specific as possible with your description</Text>
           <Text style={styles.noteText}>• Include any unique identifying features</Text>
           <Text style={styles.noteText}>• All communication will be handled securely</Text>
@@ -296,11 +303,6 @@ const styles = StyleSheet.create({
     justifyContent:  'center',
     alignItems:      'center',
     marginRight:      12,
-  },
-  backIcon: {
-    fontSize:   22,
-    color:      '#1a1a2e',
-    marginTop: -2,
   },
   headerTitle: {
     fontSize:   22,
@@ -390,7 +392,6 @@ const styles = StyleSheet.create({
     borderColor: '#2196F3',
   },
   imageOptionIcon: {
-    fontSize: 30,
     marginBottom: 6,
   },
   imageOptionTitle: {
@@ -429,6 +430,9 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   imageActionBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
     paddingVertical: 6,
     paddingHorizontal: 14,
     borderRadius: 20,
@@ -444,11 +448,16 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginBottom: 30,
   },
+  noteTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 10,
+  },
   noteTitle: {
     fontSize: 16,
     fontWeight: 'bold',
     color: '#333',
-    marginBottom: 10,
   },
   noteText: {
     fontSize: 14,

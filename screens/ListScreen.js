@@ -11,6 +11,17 @@ import {
   StatusBar,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import {
+  Search,
+  X,
+  MapPin,
+  Clock,
+  User,
+  MessageCircle,
+  SearchX,
+  PackageOpen,
+  Plus,
+} from 'lucide-react-native';
 import { subscribeToItems, formatItemDate } from '../backend/itemsService';
 import { subscribeToUserChats } from '../backend/chatService';
 import { auth } from '../firebaseConfig';
@@ -110,11 +121,19 @@ export default function ListScreen({ navigation }) {
               <Text style={styles.itemDesc} numberOfLines={1}>{item.description}</Text>
             ) : null}
 
-            <Text style={styles.itemLocation}>📍 {item.location}</Text>
+            <View style={styles.metaLine}>
+              <MapPin size={12} color="#555" strokeWidth={2.4} />
+              <Text style={styles.itemLocation}>{item.location}</Text>
+            </View>
             <View style={styles.metaRow}>
-              <Text style={styles.itemDate}>🕒 {formatItemDate(item.createdAt)}</Text>
+              <Clock size={11} color="#bbb" strokeWidth={2.4} />
+              <Text style={styles.itemDate}>{formatItemDate(item.createdAt)}</Text>
               {item.reporterName ? (
-                <Text style={styles.itemReporter}>  👤 {item.reporterName}</Text>
+                <>
+                  <Text style={styles.metaDot}>·</Text>
+                  <User size={11} color="#bbb" strokeWidth={2.4} />
+                  <Text style={styles.itemReporter}>{item.reporterName}</Text>
+                </>
               ) : null}
             </View>
           </View>
@@ -153,7 +172,7 @@ export default function ListScreen({ navigation }) {
           onPress={() => navigation.navigate('Chats')}
           style={styles.inboxBtn}
         >
-          <Text style={styles.inboxIcon}>💬</Text>
+          <MessageCircle size={20} color="#1a1a2e" strokeWidth={2} />
           {chatCount > 0 && (
             <View style={styles.inboxBadge}>
               <Text style={styles.inboxBadgeText}>
@@ -190,7 +209,7 @@ export default function ListScreen({ navigation }) {
 
       {/* ── Search bar ───────────────────────────────────────────────────── */}
       <View style={styles.searchContainer}>
-        <Text style={styles.searchIcon}>🔍</Text>
+        <Search size={16} color="#aaa" strokeWidth={2.2} style={styles.searchIcon} />
         <TextInput
           style={styles.searchInput}
           placeholder="Search by name or location..."
@@ -202,7 +221,7 @@ export default function ListScreen({ navigation }) {
         />
         {searchQuery.length > 0 && (
           <TouchableOpacity onPress={() => setSearchQuery('')} style={styles.clearBtn}>
-            <Text style={styles.clearBtnText}>✕</Text>
+            <X size={14} color="#aaa" strokeWidth={2.4} />
           </TouchableOpacity>
         )}
       </View>
@@ -236,7 +255,10 @@ export default function ListScreen({ navigation }) {
       <View style={{ flex: 1 }}>
         {filteredItems.length === 0 ? (
           <View style={styles.centered}>
-            <Text style={styles.emptyIcon}>{searchQuery ? '🔎' : '📭'}</Text>
+            {searchQuery
+              ? <SearchX size={56} color="#c7cadb" strokeWidth={1.6} style={styles.emptyIcon} />
+              : <PackageOpen size={56} color="#c7cadb" strokeWidth={1.6} style={styles.emptyIcon} />
+            }
             <Text style={styles.emptyTitle}>
               {searchQuery ? 'No results found' : 'No items yet'}
             </Text>
@@ -261,6 +283,16 @@ export default function ListScreen({ navigation }) {
           />
         )}
       </View>
+
+      {/* ── Floating report button ──────────────────────────────────────── */}
+      <TouchableOpacity
+        style={styles.reportFab}
+        onPress={() => navigation.navigate('ReportItem')}
+        activeOpacity={0.9}
+      >
+        <Plus size={18} color="#fff" strokeWidth={2.6} />
+        <Text style={styles.reportFabText}>Report</Text>
+      </TouchableOpacity>
     </SafeAreaView>
   );
 }
@@ -284,7 +316,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   emptyIcon: {
-    fontSize: 64,
     marginBottom: 16,
   },
   emptyTitle: {
@@ -358,9 +389,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 3,
     elevation: 2,
-  },
-  inboxIcon: {
-    fontSize: 20,
   },
   inboxBadge: {
     position: 'absolute',
@@ -451,7 +479,6 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   searchIcon: {
-    fontSize: 16,
     marginRight: 8,
   },
   searchInput: {
@@ -462,11 +489,6 @@ const styles = StyleSheet.create({
   },
   clearBtn: {
     padding: 4,
-  },
-  clearBtnText: {
-    color: '#aaa',
-    fontSize: 14,
-    fontWeight: '600',
   },
 
   // ── Filter tabs ───────────────────────────────────────────────────────────
@@ -577,23 +599,58 @@ const styles = StyleSheet.create({
     color: '#999',
     marginBottom: 5,
   },
+  metaLine: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginBottom: 4,
+  },
   itemLocation: {
     fontSize: 13,
     color: '#555',
-    marginBottom: 3,
     fontWeight: '500',
   },
   metaRow: {
     flexDirection: 'row',
     alignItems: 'center',
     flexWrap: 'wrap',
+    gap: 4,
   },
   itemDate: {
     fontSize: 12,
     color: '#bbb',
   },
+  metaDot: {
+    fontSize: 12,
+    color: '#bbb',
+    marginHorizontal: 2,
+  },
   itemReporter: {
     fontSize: 12,
     color: '#bbb',
+  },
+
+  // ── Floating report button ──────────────────────────────────────────────────
+  reportFab: {
+    position: 'absolute',
+    right: 18,
+    bottom: 22,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#1B3A8A',
+    paddingVertical: 12,
+    paddingHorizontal: 18,
+    borderRadius: 26,
+    shadowColor: '#1B3A8A',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  reportFabText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '700',
   },
 });

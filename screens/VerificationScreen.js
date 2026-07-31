@@ -7,6 +7,7 @@ import {
   Alert,
   ActivityIndicator,
 } from 'react-native';
+import { ChevronLeft, Mail, AlertTriangle } from 'lucide-react-native';
 import { checkEmailVerified, resendVerificationEmail } from '../backend/authService';
 
 export default function VerificationScreen({ navigation, route }) {
@@ -44,7 +45,7 @@ export default function VerificationScreen({ navigation, route }) {
       await resendVerificationEmail();
       setHasSent(true);
       Alert.alert(
-        '📬 Email Sent',
+        'Email Sent',
         `A verification link was sent to ${email}.\n\nIf it doesn't appear in your inbox within a minute, check your spam or junk folder.`,
       );
     } catch (err) {
@@ -64,13 +65,16 @@ export default function VerificationScreen({ navigation, route }) {
           onPress={() => navigation.goBack()}
           disabled={busy}
         >
-          <Text style={styles.backIcon}>‹</Text>
+          <ChevronLeft size={24} color="#333" strokeWidth={2.4} />
         </TouchableOpacity>
       )}
 
       <View style={styles.content}>
         <View style={styles.iconCircle}>
-          <Text style={styles.icon}>{hasSent ? '📬' : '⚠️'}</Text>
+          {hasSent
+            ? <Mail size={30} color="#5B6AD0" strokeWidth={2} />
+            : <AlertTriangle size={30} color="#E5793D" strokeWidth={2} />
+          }
         </View>
 
         <Text style={styles.title}>
@@ -134,11 +138,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: 24,
   },
-  backIcon: {
-    fontSize: 24,
-    color: '#333',
-    marginTop: -2,
-  },
   content: {
     flex: 1,
   },
@@ -150,9 +149,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 20,
-  },
-  icon: {
-    fontSize: 32,
   },
   title: {
     fontSize: 26,

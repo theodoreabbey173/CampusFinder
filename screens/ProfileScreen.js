@@ -10,6 +10,16 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
+import {
+  Settings,
+  Pencil,
+  Moon,
+  Package,
+  Lock,
+  HelpCircle,
+  ChevronRight,
+  Power,
+} from 'lucide-react-native';
 import { auth } from '../firebaseConfig';
 import { logoutUser } from '../backend/authService';
 import { subscribeToItems } from '../backend/itemsService';
@@ -56,7 +66,7 @@ export default function ProfileScreen() {
         {/* ── Header ─────────────────────────────────────────────────────── */}
         <View style={styles.header}>
           <Text style={styles.headerTitle}>Account</Text>
-            <Text style={styles.settingsIcon}>⚙️</Text>
+          <Settings size={20} color="#1a1a2e" strokeWidth={2} />
         </View>
 
         {/* ── Profile card ───────────────────────────────────────────────── */}
@@ -71,7 +81,7 @@ export default function ProfileScreen() {
               <Text style={styles.avatarText}>{initials}</Text>
             </View>
             <TouchableOpacity style={styles.avatarEditBadge} onPress={() => comingSoon('Edit photo')}>
-              <Text style={styles.avatarEditIcon}>✏️</Text>
+              <Pencil size={11} color="#fff" strokeWidth={2.4} />
             </TouchableOpacity>
           </View>
           <View style={styles.profileInfo}>
@@ -85,7 +95,7 @@ export default function ProfileScreen() {
         <View style={styles.card}>
           <View style={styles.row}>
             <View style={[styles.rowIconWrap, { backgroundColor: '#FFF3E0' }]}>
-              <Text style={styles.rowIcon}>🌘</Text>
+              <Moon size={16} color="#FB8C00" strokeWidth={2.2} />
             </View>
             <View style={styles.rowTextWrap}>
               <Text style={styles.rowTitle}>Dark mode</Text>
@@ -109,13 +119,13 @@ export default function ProfileScreen() {
             onPress={() => comingSoon('My reported items')}
           >
             <View style={[styles.rowIconWrap, { backgroundColor: '#FFEDE0' }]}>
-              <Text style={styles.rowIcon}>📦</Text>
+              <Package size={16} color="#E5793D" strokeWidth={2.2} />
             </View>
             <View style={styles.rowTextWrap}>
               <Text style={styles.rowTitle}>My reported items</Text>
             </View>
             {reportCount > 0 && <Text style={styles.rowCount}>{reportCount}</Text>}
-            <Text style={styles.chevron}>›</Text>
+            <ChevronRight size={18} color="#c5c8d3" strokeWidth={2.2} />
           </TouchableOpacity>
 
           <View style={styles.divider} />
@@ -126,12 +136,12 @@ export default function ProfileScreen() {
             onPress={() => comingSoon('Privacy & safety')}
           >
             <View style={[styles.rowIconWrap, { backgroundColor: '#FDE9EA' }]}>
-              <Text style={styles.rowIcon}>🔒</Text>
+              <Lock size={16} color="#E53935" strokeWidth={2.2} />
             </View>
             <View style={styles.rowTextWrap}>
               <Text style={styles.rowTitle}>Privacy & safety</Text>
             </View>
-            <Text style={styles.chevron}>›</Text>
+            <ChevronRight size={18} color="#c5c8d3" strokeWidth={2.2} />
           </TouchableOpacity>
 
           <View style={styles.divider} />
@@ -142,18 +152,18 @@ export default function ProfileScreen() {
             onPress={() => comingSoon('Help & support')}
           >
             <View style={[styles.rowIconWrap, { backgroundColor: '#FDECEE' }]}>
-              <Text style={styles.rowIcon}>❓</Text>
+              <HelpCircle size={16} color="#E53935" strokeWidth={2.2} />
             </View>
             <View style={styles.rowTextWrap}>
               <Text style={styles.rowTitle}>Help & support</Text>
             </View>
-            <Text style={styles.chevron}>›</Text>
+            <ChevronRight size={18} color="#c5c8d3" strokeWidth={2.2} />
           </TouchableOpacity>
         </View>
 
         {/* ── Log out ────────────────────────────────────────────────────── */}
         <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout} activeOpacity={0.8}>
-          <Text style={styles.logoutIcon}>⏻</Text>
+          <Power size={15} color="#E53935" strokeWidth={2.4} />
           <Text style={styles.logoutText}>Log out</Text>
         </TouchableOpacity>
 
@@ -192,9 +202,6 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  settingsIcon: {
-    fontSize: 20,
   },
 
   // Profile card
@@ -239,10 +246,6 @@ const styles = StyleSheet.create({
     borderColor: '#0f1caf',
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  avatarEditIcon: {
-    fontSize: 11,
-    color: '#fff',
   },
   profileInfo: {
     flex: 1,
@@ -291,9 +294,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginRight: 12,
   },
-  rowIcon: {
-    fontSize: 16,
-  },
   rowTextWrap: {
     flex: 1,
   },
@@ -311,10 +311,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#9aa0b4',
     marginRight: 6,
-  },
-  chevron: {
-    fontSize: 20,
-    color: '#c5c8d3',
   },
   divider: {
     height: 1,
@@ -334,10 +330,6 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     marginBottom: 16,
     gap: 8,
-  },
-  logoutIcon: {
-    fontSize: 15,
-    color: '#E53935',
   },
   logoutText: {
     fontSize: 15,

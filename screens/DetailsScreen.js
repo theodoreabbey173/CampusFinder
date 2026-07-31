@@ -8,6 +8,7 @@ import {
   Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { ChevronLeft, MapPin, Clock, User, MessageCircle } from 'lucide-react-native';
 import { formatItemDate } from '../backend/itemsService';
 
 export default function DetailsScreen({ navigation, route }) {
@@ -32,7 +33,7 @@ export default function DetailsScreen({ navigation, route }) {
               onPress={() => navigation.canGoBack() && navigation.goBack()}
               activeOpacity={0.7}
             >
-              <Text style={styles.backIcon}>‹</Text>
+              <ChevronLeft size={22} color="#1a1a2e" strokeWidth={2.4} />
             </TouchableOpacity>
             <Text style={styles.headerTitle}>Item Details</Text>
           </View>
@@ -61,19 +62,28 @@ export default function DetailsScreen({ navigation, route }) {
 
             <View style={styles.infoRow}>
               <Text style={styles.label}>Location</Text>
-              <Text style={styles.value}>📍 {item.location}</Text>
+              <View style={styles.valueRow}>
+                <MapPin size={14} color="#1A1A2E" strokeWidth={2.2} />
+                <Text style={styles.value}>{item.location}</Text>
+              </View>
             </View>
             <View style={styles.divider} />
 
             <View style={styles.infoRow}>
               <Text style={styles.label}>Time</Text>
-              <Text style={styles.value}>🕒 {formatItemDate(item.createdAt)}</Text>
+              <View style={styles.valueRow}>
+                <Clock size={14} color="#1A1A2E" strokeWidth={2.2} />
+                <Text style={styles.value}>{formatItemDate(item.createdAt)}</Text>
+              </View>
             </View>
             <View style={styles.divider} />
 
             <View style={styles.infoRow}>
               <Text style={styles.label}>Reported by</Text>
-              <Text style={styles.value}>👤 {item.reporterName ?? 'Anonymous'}</Text>
+              <View style={styles.valueRow}>
+                <User size={14} color="#1A1A2E" strokeWidth={2.2} />
+                <Text style={styles.value}>{item.reporterName ?? 'Anonymous'}</Text>
+              </View>
             </View>
           </View>
 
@@ -88,7 +98,8 @@ export default function DetailsScreen({ navigation, route }) {
 
         <View style={styles.buttonContainer}>
           <TouchableOpacity style={styles.chatButton} onPress={handleStartChat}>
-            <Text style={styles.chatButtonText}>💬  Start Secure Chat</Text>
+            <MessageCircle size={18} color="#fff" strokeWidth={2.2} />
+            <Text style={styles.chatButtonText}>Start Secure Chat</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -126,12 +137,6 @@ const styles = StyleSheet.create({
     alignItems:      'center',
     marginRight:      12,
   },
-  backIcon: {
-    fontSize:   22,
-    color:      '#1a1a2e',
-    marginTop: -2,
-  },
-
   headerTitle: {
     fontSize: 19,
     fontWeight: '700',
@@ -211,6 +216,11 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#8A8F9A',
   },
+  valueRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
   value: {
     fontSize: 15,
     fontWeight: '600',
@@ -233,6 +243,9 @@ const styles = StyleSheet.create({
     paddingBottom: 24,
   },
   chatButton: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 8,
     backgroundColor: '#16a97a',
     paddingVertical: 18,
     borderRadius: 30,

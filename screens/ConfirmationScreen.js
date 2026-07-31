@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   StyleSheet,
 } from 'react-native';
+import { CheckCircle2, Lock, Lightbulb } from 'lucide-react-native';
 
 export default function ConfirmationScreen({ navigation }) {
   const handleBackToItems = () => {
@@ -18,7 +19,7 @@ export default function ConfirmationScreen({ navigation }) {
   return (
     <View style={styles.container}>
       <View style={styles.iconContainer}>
-        <Text style={styles.checkIcon}>✅</Text>
+        <CheckCircle2 size={72} color="#4CAF50" strokeWidth={1.8} />
       </View>
 
       <Text style={styles.title}>Communication Initiated!</Text>
@@ -28,7 +29,10 @@ export default function ConfirmationScreen({ navigation }) {
       </Text>
 
       <View style={styles.infoBox}>
-        <Text style={styles.infoTitle}>🔒 Your Privacy is Protected</Text>
+        <View style={styles.boxTitleRow}>
+          <Lock size={17} color="#333" strokeWidth={2.2} />
+          <Text style={styles.infoTitle}>Your Privacy is Protected</Text>
+        </View>
         <Text style={styles.infoText}>
           • All messages are encrypted end-to-end
         </Text>
@@ -44,7 +48,10 @@ export default function ConfirmationScreen({ navigation }) {
       </View>
 
       <View style={styles.tipBox}>
-        <Text style={styles.tipTitle}>💡 Pro Tips</Text>
+        <View style={styles.boxTitleRow}>
+          <Lightbulb size={17} color="#333" strokeWidth={2.2} />
+          <Text style={styles.tipTitle}>Pro Tips</Text>
+        </View>
         <Text style={styles.tipText}>
           • Meet in public places on campus
         </Text>
@@ -77,9 +84,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 30,
   },
-  checkIcon: {
-    fontSize: 80,
-  },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
@@ -102,10 +106,15 @@ const styles = StyleSheet.create({
     borderLeftWidth: 4,
     borderLeftColor: '#4CAF50',
   },
+  boxTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 7,
+    marginBottom: 15,
+  },
   infoTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    marginBottom: 15,
     color: '#333',
   },
   infoText: {
@@ -125,7 +134,6 @@ const styles = StyleSheet.create({
   tipTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    marginBottom: 15,
     color: '#333',
   },
   tipText: {

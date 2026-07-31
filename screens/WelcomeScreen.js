@@ -7,22 +7,26 @@ import {
   StyleSheet,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Search, Map, Lock } from 'lucide-react-native';
 
 const FEATURES = [
   {
-    emoji: '🔍',
+    Icon: Search,
+    color: '#E91E63',
     bg: '#FCE4EC',
     title: 'Report in seconds',
     description: 'Post a lost or found item with a photo and location.',
   },
   {
-    emoji: '🗺️',
+    Icon: Map,
+    color: '#00897B',
     bg: '#E0F2F1',
     title: 'Browse what\'s around',
     description: 'See everything lost and found across campus.',
   },
   {
-    emoji: '🔒',
+    Icon: Lock,
+    color: '#FB8C00',
     bg: '#FFF3E0',
     title: 'Chat securely',
     description: 'Connect safely — your details stay private.',
@@ -45,7 +49,7 @@ export default function WelcomeScreen({ navigation }) {
         <View style={styles.logoWrapper}>
           <Image source={require('../assets/icon.png')} style={styles.logo} />
         </View>
-        <Text style={styles.title}>Welcome to{'\n'}CampusFinder! 🎉</Text>
+        <Text style={styles.title}>Welcome to{'\n'}CampusFinder!</Text>
         <Text style={styles.subtitle}>
           Reunite lost items with their owners — right here on campus.
         </Text>
@@ -55,7 +59,7 @@ export default function WelcomeScreen({ navigation }) {
         {FEATURES.map((feature) => (
           <View style={styles.featureRow} key={feature.title}>
             <View style={[styles.iconWrapper, { backgroundColor: feature.bg }]}>
-              <Text style={styles.iconEmoji}>{feature.emoji}</Text>
+              <feature.Icon size={22} color={feature.color} strokeWidth={2.2} />
             </View>
             <View style={styles.featureText}>
               <Text style={styles.featureTitle}>{feature.title}</Text>
@@ -141,9 +145,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 16,
-  },
-  iconEmoji: {
-    fontSize: 22,
   },
   featureText: {
     flex: 1,

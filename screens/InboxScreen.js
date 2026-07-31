@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { ChevronLeft, AlertTriangle, MessageCircle } from 'lucide-react-native';
 import { auth } from '../firebaseConfig';
 import { subscribeToUserChats, formatMessageTime } from '../backend/chatService';
 
@@ -103,7 +104,7 @@ export default function InboxScreen({ navigation }) {
         onPress={() => navigation.canGoBack() && navigation.goBack()}
         activeOpacity={0.7}
       >
-        <Text style={styles.backIcon}>‹</Text>
+        <ChevronLeft size={22} color="#1a1a2e" strokeWidth={2.4} />
       </TouchableOpacity>
       <Text style={styles.headerTitle}>Messages</Text>
     </View>
@@ -128,7 +129,7 @@ export default function InboxScreen({ navigation }) {
       <SafeAreaView style={styles.container} edges={['top']}>
         {header}
         <View style={styles.centered}>
-          <Text style={styles.errorEmoji}>⚠️</Text>
+          <AlertTriangle size={48} color="#c7cadb" strokeWidth={1.6} style={styles.errorEmoji} />
           <Text style={styles.errorText}>{error}</Text>
         </View>
       </SafeAreaView>
@@ -141,7 +142,7 @@ export default function InboxScreen({ navigation }) {
       <SafeAreaView style={styles.container} edges={['top']}>
         {header}
         <View style={styles.centered}>
-          <Text style={styles.emptyEmoji}>💬</Text>
+          <MessageCircle size={56} color="#c7cadb" strokeWidth={1.6} style={styles.emptyEmoji} />
           <Text style={styles.emptyTitle}>No conversations yet</Text>
           <Text style={styles.emptySub}>
             When someone messages you about your item, it will appear here.
@@ -203,11 +204,6 @@ const styles = StyleSheet.create({
     justifyContent:  'center',
     alignItems:      'center',
     marginRight:      12,
-  },
-  backIcon: {
-    fontSize:   22,
-    color:      '#1a1a2e',
-    marginTop: -2,
   },
   headerTitle: {
     fontSize:   22,
@@ -283,7 +279,6 @@ const styles = StyleSheet.create({
     fontSize:   15,
   },
   emptyEmoji: {
-    fontSize:     56,
     marginBottom: 12,
   },
   emptyTitle: {
@@ -312,7 +307,6 @@ const styles = StyleSheet.create({
     fontSize:    15,
   },
   errorEmoji: {
-    fontSize:     48,
     marginBottom: 12,
   },
   errorText: {

@@ -14,6 +14,16 @@ import {
   AppState,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import {
+  ChevronLeft,
+  ArrowLeft,
+  MessageCircle,
+  Lock,
+  AlertTriangle,
+  Hand,
+  Send,
+  CheckCircle2,
+} from 'lucide-react-native';
 import { auth } from '../firebaseConfig';
 import {
   createOrGetChat,
@@ -82,13 +92,13 @@ const MessageToast = ({ senderName, messageText, visible }) => {
       pointerEvents="none"
     >
       <View style={styles.toastIcon}>
-        <Text style={styles.toastIconText}>💬</Text>
+        <MessageCircle size={18} color="#fff" strokeWidth={2.2} />
       </View>
       <View style={styles.toastBody}>
         <Text style={styles.toastSender} numberOfLines={1}>{senderName}</Text>
         <Text style={styles.toastMessage} numberOfLines={1}>{messageText}</Text>
       </View>
-      <Text style={styles.toastLock}>🔒</Text>
+      <Lock size={14} color="rgba(255,255,255,0.7)" strokeWidth={2.2} style={styles.toastLock} />
     </Animated.View>
   );
 };
@@ -321,7 +331,7 @@ export default function ChatScreen({ navigation, route }) {
   if (initError) {
     return (
       <SafeAreaView style={styles.centered} edges={['top']}>
-        <Text style={styles.errorEmoji}>⚠️</Text>
+        <AlertTriangle size={52} color="#c7cadb" strokeWidth={1.6} style={styles.errorEmoji} />
         <Text style={styles.errorTitle}>Chat unavailable</Text>
         <Text style={styles.errorMessage}>{initError}</Text>
         <TouchableOpacity
@@ -338,7 +348,10 @@ export default function ChatScreen({ navigation, route }) {
           <Text style={styles.retryButtonText}>Try Again</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.goBackLink} onPress={() => navigation.goBack()}>
-          <Text style={styles.goBackLinkText}>← Go back</Text>
+          <View style={styles.goBackLinkRow}>
+            <ArrowLeft size={14} color="#2196F3" strokeWidth={2.4} />
+            <Text style={styles.goBackLinkText}>Go back</Text>
+          </View>
         </TouchableOpacity>
       </SafeAreaView>
     );
@@ -374,7 +387,7 @@ export default function ChatScreen({ navigation, route }) {
       {/* ── Header ───────────────────────────────────────────────────────── */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-          <Text style={styles.backButtonText}>‹</Text>
+          <ChevronLeft size={26} color="#333" strokeWidth={2.4} />
         </TouchableOpacity>
 
         <View style={styles.headerAvatar}>
@@ -392,7 +405,7 @@ export default function ChatScreen({ navigation, route }) {
 
       {/* ── Encryption notice (one-time banner) ──────────────────────────── */}
       <View style={styles.encryptionBanner}>
-        <Text style={styles.encryptionBannerIcon}>🔒</Text>
+        <Lock size={12} color="#22C55E" strokeWidth={2.4} style={styles.encryptionBannerIcon} />
         <Text style={styles.encryptionBannerText}>
           Messages are private & encrypted end-to-end
         </Text>
@@ -407,7 +420,7 @@ export default function ChatScreen({ navigation, route }) {
       >
         {messages.length === 0 ? (
           <View style={styles.emptyChat}>
-            <Text style={styles.emptyChatEmoji}>👋</Text>
+            <Hand size={48} color="#c7cadb" strokeWidth={1.6} style={styles.emptyChatEmoji} />
             <Text style={styles.emptyChatTitle}>Start the conversation</Text>
             <Text style={styles.emptyChatSub}>Say hello and ask about the item!</Text>
           </View>
@@ -444,14 +457,15 @@ export default function ChatScreen({ navigation, route }) {
         >
           {sending
             ? <ActivityIndicator color="#fff" size="small" />
-            : <Text style={styles.sendButtonText}>➤</Text>
+            : <Send size={18} color="#fff" strokeWidth={2.2} />
           }
         </TouchableOpacity>
       </View>
 
       {/* ── End chat ─────────────────────────────────────────────────────── */}
       <TouchableOpacity style={styles.endChatButton} onPress={handleEndChat}>
-        <Text style={styles.endChatButtonText}>End Chat &amp; Report✅</Text>
+        <CheckCircle2 size={16} color="#fff" strokeWidth={2.2} />
+        <Text style={styles.endChatButtonText}>End Chat & Report</Text>
       </TouchableOpacity>
     </KeyboardAvoidingView>
     </SafeAreaView>
@@ -477,7 +491,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   errorEmoji: {
-    fontSize:     52,
     marginBottom: 12,
   },
   errorTitle: {
@@ -507,6 +520,11 @@ const styles = StyleSheet.create({
     fontSize:   15,
   },
   goBackLink: { padding: 8 },
+  goBackLinkRow: {
+    flexDirection: 'row',
+    alignItems:    'center',
+    gap:            5,
+  },
   goBackLinkText: {
     color:    '#2196F3',
     fontSize: 14,
@@ -540,7 +558,6 @@ const styles = StyleSheet.create({
     alignItems:      'center',
     marginRight:     10,
   },
-  toastIconText: { fontSize: 18 },
   toastBody:     { flex: 1 },
   toastSender: {
     color:      '#fff',
@@ -553,7 +570,6 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   toastLock: {
-    fontSize:   16,
     marginLeft: 8,
   },
 
@@ -573,12 +589,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems:     'center',
     marginRight:    4,
-  },
-  backButtonText: {
-    fontSize:   30,
-    color:      '#333',
-    lineHeight: 30,
-    marginTop:  -4,
   },
   headerAvatar: {
     width:           40,
@@ -628,7 +638,6 @@ const styles = StyleSheet.create({
     alignItems:       'center',
   },
   encryptionBannerIcon: {
-    fontSize:   12,
     marginRight: 6,
   },
   encryptionBannerText: {
@@ -649,7 +658,6 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   emptyChatEmoji: {
-    fontSize:     48,
     marginBottom: 10,
   },
   emptyChatTitle: {
@@ -742,10 +750,6 @@ const styles = StyleSheet.create({
     alignItems:      'center',
   },
   sendButtonDisabled: { opacity: 0.35 },
-  sendButtonText: {
-    color:    '#fff',
-    fontSize: 18,
-  },
 
   // ── End chat ────────────────────────────────────────────────────────────────
   endChatButton: {
@@ -755,7 +759,10 @@ const styles = StyleSheet.create({
     marginTop:         4,
     padding:          13,
     borderRadius:     12,
+    flexDirection:    'row',
+    justifyContent:   'center',
     alignItems:       'center',
+    gap:                8,
     shadowColor:      '#4CAF50',
     shadowOffset:     { width: 0, height: 3 },
     shadowOpacity:    0.35,

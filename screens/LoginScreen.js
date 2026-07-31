@@ -13,6 +13,7 @@ import {
   Platform,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Lock } from 'lucide-react-native';
 import { loginUser } from '../backend/authService';
 
 export default function LoginScreen({ navigation }) {
@@ -136,7 +137,10 @@ export default function LoginScreen({ navigation }) {
             }
           </TouchableOpacity>
 
-          <Text style={styles.footerNote}>🔒 A verification code will be sent to your email.</Text>
+          <View style={styles.footerNoteRow}>
+            <Lock size={12} color="#9AA0AC" strokeWidth={2.2} />
+            <Text style={styles.footerNote}>A verification code will be sent to your email.</Text>
+          </View>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -272,10 +276,15 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
+  footerNoteRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 5,
+    marginTop: 16,
+  },
   footerNote: {
-    textAlign: 'center',
     color: '#9AA0AC',
     fontSize: 12,
-    marginTop: 16,
   },
 });
